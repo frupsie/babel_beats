@@ -312,7 +312,10 @@ export default function App() {
                 <>
                   This week’s Apple Music Singapore chart, {poolSize} songs. Chart songs mix languages and eras, so the language and
                   era filters are off.
-                  {SG_STALE && ' This snapshot is over 10 days old: restart npm run dev to refresh it.'}
+                  {SG_STALE &&
+                    (import.meta.env.DEV
+                      ? ' This snapshot is over 10 days old: restart npm run dev to refresh it.'
+                      : ` This is the chart from ${SG_CHART_DATE}; a newer one is on its way.`)}
                 </>
               ) : settings.pool === 'mine' ? (
                 <>

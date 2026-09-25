@@ -9,8 +9,9 @@
  *   node scripts/snapshot-sg.mjs --max-age=3   change that threshold, in days
  *
  * Why a script and not a fetch in the browser: Apple's chart feed sends no CORS header, so a web page can't
- * read it. If the download fails the existing snapshot is kept, and with --if-stale this script never fails
- * the build.
+ * read it. If the download fails (after a couple of retries) the existing snapshot is kept, and with --if-stale
+ * this script never fails the build. On GitHub, .github/workflows/refresh-sg-chart.yml runs it daily and commits
+ * the new snapshot, so a deployed site refreshes itself.
  */
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -46,15 +47,29 @@ if (ifStale && existing) {
   }
 }
 
-async function getJson(url, timeoutMs = 15_000) {
+async function getJsonOnce(url, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status} from ${new URL(url).host}`);
+    if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status} from ${new URL(url).host}`), { status: res.status });
     return await res.json();
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/** Apple's chart server sometimes answers 504 or drops the connection; those are worth a couple more tries. */
+async function getJson(url, { timeoutMs = 15_000, waits = [5_000, 20_000] } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await getJsonOnce(url, timeoutMs);
+    } catch (err) {
+      const retryable = !err.status || err.status === 429 || err.status >= 500;
+      if (!retryable || attempt >= waits.length) throw err;
+      console.warn(`  ${err.message}${err.cause?.code ? ` (${err.cause.code})` : ''}; retrying in ${waits[attempt] / 1000}s`);
+      await new Promise((r) => setTimeout(r, waits[attempt]));
+    }
   }
 }
 

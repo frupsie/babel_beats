@@ -1,0 +1,73 @@
+# Keeps the "Singapore now" list current on a deployed site.
+#
+# Apple's chart feed can't be read from a browser (no CORS header), so the chart is a file in the repo:
+# src/data/sg-now.json. Every day this job checks that file's date. Once it is 7 days old, it downloads Apple's
+# current Singapore top 100 and commits the new file; a host that deploys from this repo (Vercel, Netlify,
+# Cloudflare Pages...) then rebuilds the site with it. Running daily means a failed download (Apple's chart
+# server sometimes times out) is simply retried the next day.
+#
+# Run it by hand from the Actions tab ("Run workflow"); tick "force" to refresh even if the chart is recent.
+name: Refresh Singapore chart
+
+on:
+  schedule:
+    - cron: '17 1 * * *' # every day at 01:17 UTC (09:17 in Singapore)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Refresh now, even if the chart is less than 7 days old
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-sg-chart
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download the chart if it is 7+ days old
+        run: |
+          if [ "${{ inputs.force }}" = "true" ]; then
+            node scripts/snapshot-sg.mjs
+          else
+            node scripts/snapshot-sg.mjs --if-stale --max-age=7
+          fi
+
+      - name: Commit the new chart
+        run: |
+          if git diff --quiet -- src/data/sg-now.json; then
+            echo "Chart unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898341+github-actions[bot]@users.noreply.github.com"
+          git add src/data/sg-now.json
+          git commit -m "Refresh Singapore chart ($(date -u +%Y-%m-%d))"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      # Downloads that keep failing would otherwise go unnoticed: fail the job (GitHub emails you) once the chart
+      # in the repo is two weeks old.
+      - name: Check the chart is not going stale
+        run: |
+          node -e "
+            const s = require('./src/data/sg-now.json');
+            const days = (Date.now() - Date.parse(s.fetchedAt)) / 864e5;
+            console.log('Chart snapshot is ' + days.toFixed(1) + ' days old, ' + s.entries.length + ' songs.');
+            if (days > 14 || s.entries.length === 0) { console.error('The Singapore chart has not refreshed for two weeks.'); process.exit(1); }
+          "

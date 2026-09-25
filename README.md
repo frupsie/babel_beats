@@ -43,9 +43,17 @@ languages and eras, so the language and era filters switch off, and the reveal c
 (`SG #12`) instead of a language.
 
 - **Weekly refresh:** `npm run dev` and `npm run build` first run `scripts/snapshot-sg.mjs --if-stale`, which downloads a
-  fresh chart only when `src/data/sg-now.json` is 7+ days old (needs internet; if the download fails it keeps the old file
-  and carries on). Force a refresh any time with `npm run snapshot:sg`. If a dev server runs for weeks, restart it or run
-  that command; the game shows a note when the snapshot is over 10 days old.
+  fresh chart only when `src/data/sg-now.json` is 7+ days old (needs internet; it retries twice, and if the download still
+  fails it keeps the old file and carries on). Force a refresh any time with `npm run snapshot:sg`. If a dev server runs
+  for weeks, restart it or run that command; the game shows a note when the snapshot is over 10 days old.
+- **On a deployed site:** `.github/workflows/refresh-sg-chart.yml` runs on GitHub every day at 09:17 Singapore time. Once
+  the chart file is 7 days old it downloads a new one and commits it, and a host that deploys from this repo (Vercel,
+  Netlify, Cloudflare Pages...) rebuilds the site with it. A failed download is simply retried the next day; if the chart
+  goes two weeks without refreshing, the job fails and GitHub emails you. Run it by hand from the repo's **Actions** tab
+  ("Refresh Singapore chart" → "Run workflow", tick *force* to refresh now). Apple updates the chart every few days; to
+  follow it more closely, lower `--max-age=7` in the workflow (each refresh is one commit).
+- **Node 24:** the scripts load TypeScript files directly, which needs Node 22.18 or newer. `.nvmrc` and `engines` in
+  `package.json` tell GitHub and most hosts to use it.
 - **Why a script, not a browser fetch:** Apple's chart feed sends no CORS header, so a web page can't read it. (Apple's
   lookup API, which supplies each song's preview URL, does allow browsers, and the game uses it at play time.)
 - **Songs already in your catalogue** use the catalogue's own entry (curated pinyin, year, language), so they keep their
@@ -133,6 +141,11 @@ accepted as guesses.
   has ~90px of travel for 101 values, so at 1% some values can't be reached by dragging); the arrow keys move in exact 1%
   steps. The level (a squared curve, so the quiet half stays usable) and mute state are remembered. 100% is the loudest
   the game goes; your system volume is the ceiling.
+- **Where clips start:** Apple's 30-second previews are usually a section from the middle of the song, not its intro, and
+  Apple doesn't say which section. Clips start at the beginning of the preview, except that a quiet opening (a soft bar, a
+  breath, near-silence) is skipped: every clip in a round starts at the first moment the preview stays at a quarter of
+  its typical loudness for 200 ms, never more than 3 s in (`src/lib/clipStart.ts`). In a sample of 24 playlist songs, 16
+  were untouched and 8 skipped 0.2 to 1.4 s.
 - Settings, stats and volume live in `localStorage`; nothing is sent anywhere.
 - **Bundle size:** the song lists (`src/data/*.json`) are compiled into the JavaScript so the site stays plain static
   files. With both playlists that is about 1.1 MB (roughly 300 kB gzipped). If it ever matters, load `playlists.json` with

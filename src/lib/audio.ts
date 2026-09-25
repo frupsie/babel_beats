@@ -4,21 +4,18 @@
  * Apple's preview host sends open CORS headers, which is what makes fetch + decode possible.
  */
 
-/** AAC previews often begin with a few ms of encoder silence; skip it so a 0.1 s clip is not mostly silence. */
-export function firstAudibleOffset(buffer: AudioBuffer, threshold = 0.01, maxSeconds = 0.6): number {
-  const limit = Math.min(buffer.length, Math.floor(buffer.sampleRate * maxSeconds));
-  let first = limit;
-  for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-    const data = buffer.getChannelData(ch);
-    for (let i = 0; i < first; i++) {
-      if (Math.abs(data[i]!) > threshold) {
-        first = i;
-        break;
-      }
-    }
+import { clipStart } from './clipStart';
+
+/** Where clips start in each preview (skipping a quiet opening), worked out once per decoded preview. */
+const starts = new WeakMap<AudioBuffer, number>();
+function startOf(buffer: AudioBuffer): number {
+  let start = starts.get(buffer);
+  if (start === undefined) {
+    const channels = Array.from({ length: buffer.numberOfChannels }, (_, ch) => buffer.getChannelData(ch));
+    start = clipStart(channels, buffer.sampleRate);
+    starts.set(buffer, start);
   }
-  if (first >= limit) return 0;
-  return Math.max(0, first / buffer.sampleRate - 0.005);
+  return start;
 }
 
 export class ClipEngine {
@@ -68,13 +65,13 @@ export class ClipEngine {
     return { ctx: this.ctx, master: this.master };
   }
 
-  /** Plays the first `seconds` of the track. Must be called from a click/tap handler. */
+  /** Plays `seconds` of the track from its clip start (see clipStart.ts). Must be called from a click/tap handler. */
   play(buffer: AudioBuffer, seconds: number, onEnded: () => void): void {
     this.stop();
     const { ctx, master } = this.output();
     void ctx.resume();
 
-    const offset = firstAudibleOffset(buffer);
+    const offset = startOf(buffer);
     const duration = Math.min(seconds, buffer.duration - offset);
     const startAt = ctx.currentTime + 0.02;
 
