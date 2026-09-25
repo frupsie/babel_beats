@@ -1,0 +1,461 @@
+# Spotify playlist "享受人生" by jayden: https://open.spotify.com/playlist/71eAiGqgoxh6exAUOg9Sri
+# Read from the public playlist page on 2026-09-21. It has 477 songs; 21 were set aside (3 duplicates and 18 derivative
+# versions: sped-up, DJ, Live, instrumental, female-voice or "mood" re-cuts), leaving the 456 below.
+# lang: zh
+# One song per line: title|artists  (artists comma-separated, exactly as Spotify shows them)
+白月光与朱砂痣|大籽
+好想愛這個世界啊|Hua Chen Yu
+一百万个可能|季彦霖
+多想留在你身边|刘增瞳
+呼吸決定|Fine樂團
+多想爱你|季彦霖
+是想你的聲音啊|Winnie Jiang
+夏天的风|蔡恩雨 Priscilla Abby
+1022-比尔的歌|Bomb比尔
+与我无关|Ng Han Yi
+都怪我|胡66
+静悄悄|大泫
+忽而今夏|Silence Wang
+退守|伊格赛听, 王雨桐
+后知后觉|林贝贝
+心跳的證明 - 電影《一吻定情》心動版主題曲|刘人语
+那些你很冒險的夢|JJ Lin
+爱河|蒋雪儿Snow.J
+晴天|Jay Chou
+善变|王靖雯
+沦陷|王靖雯
+不知所措|王靖雯
+忘了没有|王靖雯
+忽而今夏|王靖雯
+爱,存在|王靖雯
+0321|Roxy马瑞欣
+偷听对白|joysaaaa
+问心|就是南方凱
+落叶与秋|刘烁七, 梓豪
+比宇宙浪漫|覆予
+说说话|王靖雯
+飞鸟和蝉|Ren Ran
+失控|井迪
+迷人的危險|蔡黃汝
+从前说|小阿七
+可惜沒如果|JJ Lin
+哪里都是你|隊長
+不如|秦海清
+曾经你说|赵乃吉
+星辰不墜落|藍心羽
+全名|Uu (刘梦妤)
+落在生命裡的光|Yin Xi Mian
+那女孩對我說|Rachel Liang
+演員|Joker Xue
+小幸運|Hebe Tien
+阿拉斯加海湾|蔡恩雨 Priscilla Abby
+不為誰而作的歌|JJ Lin
+生分|川青
+後來的我們|Mayday
+不該 (with 張惠妹)|Jay Chou, A-Mei Chang
+就忘了吧|1K
+Without You|高爾宣 OSN
+特别邀请|橘子妹
+嘉宾|张远
+想見你想見你想見你 - 電視劇《想見你》片尾曲|831
+體面|Kelly Yu
+怎麼了|Eric Chou
+粉色星球|Youngior
+疑心病|Ren Ran
+獨家記憶|Jordan Chan
+Why You Gonna Lie|高爾宣 OSN
+我的歌声里 (You Exist In My Song)|Wanting
+不要让我太喜欢你|蔡恩雨 Priscilla Abby
+如果可以 - 電影"月老"主題曲|WeiBird
+我要|顾三十
+for ya|蔣小呢
+那一刻心動|ZiMo Ren
+只是太愛你|Hins Cheung
+再見只是陌生人|Ada Zhuang
+唯一 (三立/台視戲劇《戀愛是科學》插曲)|告五人
+晚点告白|葛雨晴
+如果雨之後|Eric Chou
+你，好不好？ - TVBS連續劇【遺憾拼圖】片尾曲|Eric Chou
+手心的薔薇|JJ Lin, G.E.M.
+最後一堂課 - 《媽，別鬧了！》影集片尾曲|Eric Chou
+别对我说|Lancelot_兰斯洛
+Letting Go|Tanya Chua
+记·念|Yuxin Lei
+修煉愛情|JJ Lin
+永不失聯的愛|Eric Chou
+下雨天|芝麻
+间距|en
+我很快樂|Eric Chou
+嚣张|EN
+說謊|Yoga Lin
+你不屬於我 - 《比悲傷更悲傷的故事》影集版片尾曲|Eric Chou
+想知道你在想什麼 - 《我吃了那男孩一整年的早餐》電影主題曲|Eric Chou
+星星永远发着光|彭宇昕Chloe
+是你|梦然
+不再聯繫|夏天Alex
+Be Alright|高爾宣 OSN
+感谢你曾来过|阿涵, Ayo97
+绿色|Shirley Chen
+走不出的回忆|Ren Ran
+如果的事|SuperLuckyQi
+放過自己|Ada Zhuang
+或许|LBI利比
+爱怎么了|陈村长
+错过|杨馥伊
+后继者|Ren Ran
+11 (with Hooleeger)|隊長, 黃禮格
+No Reason|Ryan.B, effie
+NUNA|隊長
+安靜|Jay Chou
+等你下課 (with Gary Yang)|Jay Chou, Gary Yang
+即刻|joysaaaa
+起风了|吳青峰
+Never Again|Ryan.B, AY楊佬叁
+时间轴|音阙诗听, 王梓钰
+无忘|钟芷晴
+来迟|戴羽彤
+搁浅|辣辣lala
+突然好想你|Mayday
+不得不愛|Xian Zi
+學不會|JJ Lin
+挂断|秋原依
+在你的身邊|盛哲
+淘气男孩|Roxy马瑞欣
+目及皆是你|小蓝背心, 张鸣利
+少年|梦然
+我是如此相信|Jay Chou
+你的答案|阿冗
+当想你成为习惯|KeyKey
+擱淺|Jay Chou
+忙着|羊羊
+明明就|Jay Chou
+烏梅子醬|Ronghao Li
+帶我去找夜生活|告五人
+予你|隊長
+愛人錯過|告五人
+肯定|RE-D, Masta OGBIGBABE, 是二哈ya
+不刪|井朧
+那些年|Hu Xia
+像极了|Ryan.B
+愛我的時候|Eric Chou, 單依純
+苦咖啡·唯一|那奇沃夫, KKECHO
+聽媽媽的話|Jay Chou
+隔岸观火|li2c
+楼顶上的小斑鸠|隊長
+毛衣|隊長
+堕|Zyboy忠宇
+洛杉矶|LBI利比
+半空|陈之
+遇到|颜人中
+多有打擾|zkaaai
+我太笨|锤娜丽莎
+妈妈的话|Zyboy忠宇
+落脚|陆杰awr
+hard to let you go|Sherman Zhuo
+可能|隊長
+飞到你心里|隊長
+我会等|承桓
+安静的稻草人|Daven Wu
+落日与晚风|苏星婕, In K, 王忻辰
+我不配你要的|PAX
+LOVE|隊長, 郑润泽
+Don't Go|Roxy马瑞欣
+願與愁|JJ Lin
+身后|Roxy马瑞欣
+與我無關|阿冗
+勇气|棉子
+一定会再见吧 (with 黄礼格)|隊長, 黃禮格
+平行不交叉|YR卡拉
+下坠Falling|K.D
+心牆|Claire Kuo
+好似又过几个秋|隊長
+还是会想你|林達浪, h3R3
+四季予你|程響
+盛夏的告别 - 电视剧《我的人间烟火》思念主题曲|TIA RAY
+失眠飞行 (Insomnia Flight)|接个吻,开一枪, 沈以誠, 薛黛霏
+丢了你|井朧
+短髮|Gigi Leung
+执迷不悟|王贰浪
+惡作劇|Tangerine Wong
+干嘛听苦情歌以为多浪漫|南辞
+再見|G.E.M.
+光年之外 (電影 《Passengers》 中國區主題曲)|G.E.M.
+有点想你|Aioz, 董唧唧
+愛我別走|Zhang Zhen Yue
+妳在哪裡 (WYA)|Jay Park, NINGNING
+以後別做朋友|Eric Chou
+煎熬|Jess Lee
+聽見下雨的聲音|Queen Wei
+第一天|Mayday
+房间 (电影《超时空同居》插曲)|Richael Liu
+过客|阿涵
+反正|张齐山
+即使喝醉也不会再打你的电话|隊長
+字字句句|卢卢快闭嘴
+You Are My Light|赵露思 Rosy
+毕竟深爱过|六哲
+Caramel - 《爱上她的理由》动画片头曲|石玺彤, 谢雨纯, 钟欣cent3e, Zzqc_Jessie
+In My Heart - 《爱上她的理由》朱茱角色曲|EnjiA魏恩佳
+清空|苏星婕, 王忻辰
+摯友|A-Lin
+刻在我心底的名字 (Your Name Engraved Herein) - 電影<刻在你心底的名字>主題曲|Crowd Lu
+有一種悲傷 - 電影《比悲傷更悲傷的故事》主題曲|A-Lin
+風|隊長
+三拜红尘凉|Yin Xi Mian
+热恋夏季|杨郡安
+五百二十赫兹|Capper
+下山|要不要买菜
+指紋|杜宣達
+七里香|Jay Chou
+天外來物|Joker Xue
+晚风告白|星野
+我期待的不是雪|张妙格
+在加納共和國離婚|Firdhaus, DIOR 大穎
+时不时回头|Ren Ran
+Let Go (feat. YOUNG Captain)|黃禮格, 隊長
+最后一页|姚晓棠
+骗子|戴羽彤
+Bu De Bu Ai 不得不爱|Inquisitive, Hannah Ying
+你在不在|EN
+听说你|于冬然
+悬溺|葛东琪
+兜兜转转|小京东
+如果爱忘了|en王翊恩
+满天星辰不及你|ycccc
+LOST|隊長
+沒有你的世界|Lil RAD, Coy6oi
+冻结|邹沛沛
+最对的错|Sherman Zhuo
+可能是风太大了吧|GooGoo
+希望你被这个世界爱着|吕口口
+追光者 (電視劇《夏至未至》插曲)|Yoyo Sham
+算了吧|Aioz, xxxmiracle
+若月亮没来（若是月亮还没来）|王宇宙Leto, 乔浚丞
+航向远方|梦然
+失眠症|苏星婕
+小事情|Yuki Hsu
+炊烟|隊長, Dobi
+能遇見，就很不錯了|Firdhaus
+有天會再相見|DIOR 大穎
+防线|王同学Able
+算了吧|1FAN
+陪你看星星|陈子晴
+春娇与志明|街道办GDC, 欧阳耀莹
+单人券|张齐山DanieL
+天若有情 - 電視劇「錦繡未央」主題曲|A-Lin
+可惜不是你|Fish Leong
+摯友|Eric Chou
+暮色迴響|吉星出租
+我看了56次日落|邵甲天, 邹念慈
+追光|王梦泽
+这一趟半路留下来的人才苦|Ryan.B
+我像一个傻瓜|河北YE, 河南说唱之神
+雪落不下的地方 (A Place Where It Doesn't Snow)|寒冰Ice
+我想要妳Get Closer|Showmaîn邱小明
+朋友圈|高宇Slient, 0000FF, Sapling, B.T.M
+彩券|Joker Xue
+你還要我怎樣|Joker Xue
+剛剛好|Joker Xue
+醜八怪|Joker Xue
+云水谣|en王翊恩
+Crush on|李浩瑋 Howard Lee
+Hold On|高爾宣 OSN, Patrick Brasca
+天花乱坠|FIVE乐团, 苏星婕, 蘇星婕
+Somebody Else|高爾宣 OSN
+是什麼讓我遇見這樣的你|Ann Bai
+爱意藏风里|何雨溪, KyL3
+我懷念的|Stefanie Sun
+LAST GOODBYE|sunkis
+作废的承诺|苏星婕
+与你邂逅|LBI利比, 九九啊
+祝她越来越好|Aioz
+不痛不痒|LBI利比
+我知道|WiFi歪歪
+年少有為|Ronghao Li
+其实|Joker Xue
+說好的幸福呢|Jay Chou
+冬眠|司南
+茫|李润祺
+绅士|Joker Xue
+月牙灣|F.I.R.
+泡沫|G.E.M.
+突然一场雨|蓝心羽
+落海|Ren Ran
+雀跃|Ren Ran
+給我一個理由忘記|A-Lin
+藉口|Jay Chou
+未发送|阿冗
+从今以后|隊長
+像晴天像雨天（电视剧《难哄》心动曲）|Silence Wang
+凉城|Ren Ran
+你的酒馆对我打了烊|Shirley Chen
+潮汐|IN-K, 安苏羽, 傅梦彤
+小酒窩|JJ Lin, Charlene Choi
+人生，起起落落落落落？|Firdhaus
+记忆停留|蓝心羽
+有些事想告訴你|思遠AL
+沉溺（你让我的心不再结冰）|邹沛沛, Pank
+别让爱凋落|卢润泽
+这世界很美的吧|Zyboy忠宇
+时间胶囊|Ryan.B, 丛琳潼elf
+就让这大雨全都落下|Joey Yung
+夏日微风|Uu (刘梦妤)
+一了百了|周延英(英子 effie), Ryan.B
+尋我|隊長
+小时光|胡期皓
+芒种|音阙诗听, 赵方婧
+麦浪|Yihuik苡慧
+離開你以後 - 電影《你的婚禮》插曲|Eric Chou
+句號|G.E.M.
+連名帶姓|A-Mei Chang
+致你|Yihuik苡慧
+孤单心事|颜人中
+岛屿|小蓝背心
+第57次取消发送|菲菲公主
+有備無份|星野
+我的人生连毛坯都不是(妈，我好累)|vic
+Princess|XMASwu吴骜
+原地偶遇|KeyKey
+下一次哭|承桓
+你不知道的事|Leehom Wang
+Doll|菲菲公主
+银河里的繁星|Roxy马瑞欣
+友谊长存|Firdhaus
+02|Zyboy忠宇
+受夠|Eric Chou
+后来遇见他|胡66
+错季|秋原依
+可以不是你|张远
+雨愛|Rainie Yang
+別勉強 (feat. Eric 周興哲)|G.E.M., Eric Chou
+假動作|隊長
+I'll wait for you|菲菲公主
+雨天|呆呆破
+没能成为你的白马（没能看你穿上婚纱）|杨天一
+放空|大籽, Lil E
+失眠的夜|宋孟君, 范川哲
+過了幾天|郭家瑋
+分界|LBI利比
+海闊天空|Beyond
+唯一|G.E.M.
+凌晨三點 2025|BK
+你知道你比晚霞好看嗎|Tr33, BK, Seluu
+第一次見妳的我|BK, Vigoz
+瞬|郑润泽
+星辰starlight|KeyKey, Loong-G龍吉
+免打扰|Aioz
+Reverse|CORSAK, Ma Yin Yin
+髮如雪|Jay Chou
+底线|山止川行, 庄淇文29
+完美降落|胡期皓, 董唧唧, 叶琼琳
+多遠都要在一起|G.E.M.
+走向我是为了离开我|LBI利比
+猜不透|Aioz, 刘思达
+落空|苏星婕
+離開我的依賴|Evangeline Wong
+倒數|G.E.M.
+This is love|Eric Chou
+放你走吧|Aioz
+愛情教會我們的事|Eric Chou
+心動降臨|星野
+也许|joysaaaa
+喜欢发光的你|王子明
+給妳的愛|BK
+交換餘生|JJ Lin
+SOS|ZIK, 邹沛沛
+沦陷（Sink Into）|Juggshots
+梦时|Juggshots
+爱错|于冬然, 於冬然
+他只是经过|h3R3, 高旭
+爱错|en王翊恩
+等|呆呆破
+慢慢|小乐哥(王唯乐)
+未完成恋人|星野
+naked island|XMASwu吴骜
+咱們結婚吧|齊晨
+亿万光年之约|尹昔眠
+你最近過得好嗎?|DIOR 大穎
+陌生人|Shi En
+一起吹过晚风的街|聂思诗(艾米要吃米)
+云与海|阿YueYue
+不將就 (電影"何以笙簫默"片尾曲)|Ronghao Li
+偏向|陈子晴
+告诉你我多想你|王子明, 杀不死Subs
+戒菸|Ronghao Li
+就是爱你|Yihuik苡慧
+來自天堂的魔鬼|G.E.M.
+紅色高跟鞋|Tanya Chua
+相反的默契|王子明, 腹黑的老吴
+等雨停|en王翊恩
+仗着|陈壹千
+Follow|梨冻紧, Wiz_H張子豪
+保安日记|隊長
+心之火|卢卢快闭嘴
+湖泊|Joker Xue
+如果这就是爱情|Jane Zhang
+风夜行|蒋雪儿Snow.J
+模特|Ronghao Li
+一点点（为什么晚上总是有星星）|董唧唧, 芊芊龍
+忘了吧|陈村长
+落日与你|LBI利比
+海屿你|马也_Crabbit
+暗示分离|EN
+說了再見|Jay Chou
+爱不需要回答|王子明
+一念《逐玉》|张紫宁, 李鑫一, YKeophirun
+淋一场雨|LBI利比(时柏尘)
+我又想你了|h3R3
+小時候的我們|Eric Chou
+看着我的眼睛说|张远
+西楼别序|Yin Xi Mian, 小田音乐社
+下坠|Corki刘宗鑫
+丘比特的Moon(Moon Moon Moon）|Juggshots, Windapaper
+害怕失去你|Aioz, YangYang
+雾里|姚六一
+纸飞机|Ryan.B
+航行|蒋小呢
+關鍵詞|JJ Lin
+零点|KeyKey
+我們的愛|F.I.R.
+退後|Jay Chou
+我們到底算什麼|徐暐翔
+楓|Jay Chou
+普通朋友|David Tao
+眼淚記得你 - 電影《想見你》主題曲|Shi Shi
+想和你看五月的晚霞|陳華
+珊瑚海|Jay Chou, Lara Liang
+雲煙霧靄|星野
+写故事的人|Silence Wang
+對等關係 (feat. 張惠妹)|Ronghao Li, A-Mei Chang
+戀人|Ronghao Li
+那就讓你忘了我吧|Xinz
+我的秘密|G.E.M.
+Falling Down|隊長
+夏夜最后的烟火|颜人中
+愛錯|Leehom Wang
+Remember|PPlin 林芃逸, YangCh!ll
+年轮|Silence Wang
+杏花雨绵|隊長
+My Dear（电视剧《难哄》重逢曲）|張洢豪
+消散对白|丁禹兮
+遇見|Stefanie Sun
+你离开的事实|高旭, Dracooo
+愛在西元前|Jay Chou
+何物|Lancelot_兰斯洛
+耗盡|Joker Xue, 郭聰明
+猜不透|Della
+天后|Andrew Tan
+還愛著你|Chen Linong
+命運|Jia Jia
+情结|你们的好朋友大雨
+終於了解自由|Eric Chou
+捨不得的時刻|陳華
+这是你期盼的长大吗|ZQS
+甲乙丙丁Strangers|Jess Lee
+親愛的那不是愛情|Angela Chang
+很久以後 - 電影《可不可以，你也剛好喜歡我》主題曲|G.E.M.
+記得|JJ Lin
+說散就散|JC 陳詠桐
+手放開|Sam Lee
+演员|Joker Xue
+丑八怪|Joker Xue
