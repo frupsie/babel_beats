@@ -1,5 +1,5 @@
-import type { LangCode } from '../data/languages';
-import type { Difficulty, Era, Pool, Song } from '../types';
+import type { LangCode } from '../data/languages.ts';
+import type { Difficulty, Era, Pool, Song } from '../types.ts';
 
 /** iTunes previews are 30 seconds long. */
 export const FULL_PREVIEW_SECONDS = 30;

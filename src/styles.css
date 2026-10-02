@@ -1258,6 +1258,315 @@ button {
   gap: 10px;
 }
 
+/* ------------------------------------------------------------------ party rooms */
+
+.party__title {
+  margin: 0 0 12px;
+  font: 400 1.45rem / 1.15 var(--f-display);
+}
+.party__error {
+  margin: 12px 0 0;
+  font: 500 0.78rem var(--f-mono);
+  color: var(--alert);
+}
+.party__start {
+  width: 100%;
+  margin-top: 22px;
+}
+
+/* entry: name, then host or join side by side */
+.party-entry {
+  display: grid;
+  place-items: start center;
+}
+.party-entry__card {
+  width: min(100%, 640px);
+}
+.party-entry__split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 26px;
+  margin-top: 24px;
+}
+.party-entry__half {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.party-entry__half .btn {
+  margin-top: auto;
+}
+.party-entry__back {
+  margin-top: 26px;
+}
+.note--tight-top {
+  margin-top: -4px;
+}
+
+.field {
+  display: block;
+  margin: 0 0 14px;
+}
+.field__label {
+  display: block;
+  margin-bottom: 6px;
+  font: 700 0.66rem var(--f-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.field__input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.field__input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--yellow), var(--hard);
+}
+.field__input--code {
+  font: 400 1.5rem var(--f-display);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* the room panel: code, then players and scores */
+.room-card {
+  margin: 0 0 26px;
+  padding: 16px 18px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: var(--paper-hi);
+  box-shadow: var(--hard);
+}
+.room-card__label {
+  margin: 0;
+  font: 700 0.62rem var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.room-card__code {
+  margin: 2px 0 12px;
+  font: 400 2.6rem / 1 var(--f-display);
+  letter-spacing: 0.18em;
+}
+.room-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.room-card__you {
+  margin-bottom: 0;
+}
+
+.scoreboard__list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.scoreboard__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper-hi);
+}
+.scoreboard__row.is-you {
+  background: color-mix(in srgb, var(--yellow) 45%, var(--paper-hi));
+}
+.scoreboard__row.is-away {
+  opacity: 0.55;
+}
+.scoreboard__mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  font: 700 0.72rem var(--f-mono);
+}
+.scoreboard__mark.is-won {
+  background: var(--good);
+}
+.scoreboard__mark.is-lost {
+  background: color-mix(in srgb, var(--red) 40%, var(--paper));
+}
+.scoreboard__mark.is-playing,
+.scoreboard__mark.is-waiting {
+  background: var(--yellow);
+}
+.scoreboard__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scoreboard__host {
+  color: var(--ink-soft);
+}
+.scoreboard__away {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.scoreboard__gain {
+  font: 700 0.72rem var(--f-mono);
+  color: var(--good);
+}
+.scoreboard__score {
+  min-width: 4ch;
+  font: 700 0.8rem var(--f-mono);
+  text-align: right;
+}
+
+/* lobby */
+.party-lobby .stamps {
+  margin-top: 4px;
+}
+.party-lobby .seg {
+  margin-top: 18px;
+}
+.party-summary {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+}
+
+/* Phones: the room panel's two parts sit around the game. In a round the game comes first, then the scores, then the
+   room code; in the lobby and at the end, the code (to share) comes first. */
+@media (max-width: 899px) {
+  .party .room-card {
+    order: 1;
+  }
+  .party .stage {
+    order: 2;
+  }
+  .party .scoreboard {
+    order: 3;
+  }
+  .party.is-in-round .stage {
+    order: 0;
+  }
+  .party.is-in-round .room-card {
+    order: 4;
+    margin: 0;
+  }
+}
+
+/* a round */
+.party-round__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.party-round__no {
+  margin: 0;
+  font: 700 0.7rem var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.party-round__clock {
+  margin: 0;
+  font: 400 1.3rem var(--f-display);
+}
+.party-round__clock.is-low {
+  color: var(--alert);
+}
+.party-round__bar {
+  height: 8px;
+  margin: 8px 0 14px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+}
+.party-round__bar span {
+  display: block;
+  height: 100%;
+  background: var(--pink);
+  transform-origin: left;
+}
+.party-countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  border-radius: 21px;
+  background: color-mix(in srgb, var(--paper-hi) 82%, transparent);
+  font: 400 clamp(5rem, 22vw, 9rem) / 1 var(--f-display);
+  animation: slam 0.5s cubic-bezier(0.2, 1.5, 0.35, 1) both;
+}
+.reveal__next {
+  align-self: center;
+  margin: 0;
+  font: 500 0.72rem var(--f-mono);
+  color: var(--ink-soft);
+}
+
+/* the end */
+.podium {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.podium__row {
+  display: grid;
+  grid-template-columns: 2.4em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper-hi);
+}
+.podium__row.is-1 {
+  background: var(--yellow);
+  box-shadow: var(--hard);
+}
+.podium__row.is-2,
+.podium__row.is-3 {
+  background: var(--paper);
+}
+.podium__row.is-you .podium__name::after {
+  content: ' (you)';
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.podium__place {
+  font: 400 1.4rem var(--f-display);
+}
+.podium__name {
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.podium__score {
+  font: 700 0.9rem var(--f-mono);
+}
+.party-final__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 /* ------------------------------------------------------------------ motion */
 
 @keyframes rise {

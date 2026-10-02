@@ -1,7 +1,7 @@
 // The "Singapore now" list: this week's Apple Music Singapore top 100.
 // Pure helpers shared by the app and scripts/snapshot-sg.mjs (Node runs this file directly, so keep it to
 // erasable TypeScript: no enums or namespaces).
-import type { LangCode, Song } from '../types';
+import type { LangCode, Song } from '../types.ts';
 import { buildListPool, matchesSong, type ListEntry, type ListPool } from './lists.ts';
 
 /** The fields we read from one item of Apple's chart feed. */

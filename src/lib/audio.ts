@@ -71,6 +71,16 @@ export class ClipEngine {
     return { ctx: this.ctx, master: this.master };
   }
 
+  /**
+   * Gets audio ready to play later without a click, e.g. when a party round starts for everyone at once. Browsers (and
+   * iOS above all) only allow that once the page has started audio from a click or tap, so call this from one.
+   */
+  unlock(): void {
+    const { ctx } = this.output();
+    this.session?.claim();
+    void ctx.resume();
+  }
+
   /** Plays `seconds` of the track from its clip start (see clipStart.ts). Must be called from a click/tap handler. */
   play(buffer: AudioBuffer, seconds: number, onEnded: () => void): void {
     this.stop();

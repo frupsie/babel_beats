@@ -1,7 +1,7 @@
 // Helpers shared by every "list of songs" the game can play besides the curated catalogue: this week's Singapore
 // chart and your own playlists. Pure functions; scripts/*.mjs run this file directly under Node, so keep it to
 // erasable TypeScript (no enums or namespaces).
-import type { LangCode, Song } from '../types';
+import type { LangCode, Song } from '../types.ts';
 import { compact, titleKey } from './text.ts';
 
 /** One position in a list. `song` is always complete; `catalogId` marks it as a song already in the curated catalogue. */

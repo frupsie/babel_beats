@@ -1,7 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import catalogJson from './data/catalog.json';
-import playlistsJson from './data/playlists.json';
-import sgSnapshotJson from './data/sg-now.json';
 import { LANGUAGES, LANG_CODES, languageInfo, type LangCode } from './data/languages';
 import { GuessBox } from './components/GuessBox';
 import { Ladder } from './components/Ladder';
@@ -12,7 +9,7 @@ import { Segmented } from './components/Segmented';
 import { StatsDialog } from './components/StatsDialog';
 import { Vinyl } from './components/Vinyl';
 import { VolumeControl } from './components/VolumeControl';
-import { ClipEngine } from './lib/audio';
+import { engine } from './lib/engine';
 import { cx, fmtSeconds, formatChartDate, langStyle } from './lib/format';
 import {
   DIFFICULTIES,
@@ -22,17 +19,18 @@ import {
   currentClip,
   ladderFor,
   newRound,
-  pickFromList,
-  pickSong,
   poolFor,
   skipGain,
   type GuessEntry,
   type RoundState,
 } from './lib/game';
 import { resolveTrack } from './lib/itunes';
-import { buildListPool, type PlaylistsFile } from './lib/lists';
-import { indexSongs, isCorrectTitle } from './lib/match';
-import { ageInDays, buildSgPool, type SgSnapshot } from './lib/sgNow';
+import { isCorrectTitle } from './lib/match';
+import { pickNext, poolSongs as poolSongsIn } from './lib/pools';
+import { ageInDays } from './lib/sgNow';
+import { INDEX, POOLS, SG_SNAPSHOT } from './lib/songData';
+import { PartyView } from './party/PartyView';
+import { roomFromUrl } from './party/useParty';
 import {
   emptyStats,
   loadAudioPrefs,
@@ -46,29 +44,17 @@ import {
 import { gainFor } from './lib/volume';
 import type { Difficulty, Era, Pool, Settings, Song, Stats } from './types';
 
-const CATALOG = catalogJson as unknown as Song[];
-
+// The song lists (see lib/songData.ts and lib/pools.ts).
 // "Singapore now": the snapshot is written by scripts/snapshot-sg.mjs, which npm runs before `dev` and `build`
 // whenever the file is 7+ days old. It is a static file because Apple's chart feed can't be read from a browser.
-const SG_SNAPSHOT = sgSnapshotJson as unknown as SgSnapshot;
-const SG = buildSgPool(SG_SNAPSHOT, CATALOG);
+// "My playlists": your Spotify playlists, resolved to songs Apple can preview by scripts/build-playlists.mjs.
+const { catalog: CATALOG, sg: SG, mine: MINE, playlists: PLAYLISTS } = POOLS;
 const SG_CHART_DATE = formatChartDate(SG_SNAPSHOT.chartUpdated);
 const SG_STALE = SG.pool.length > 0 && ageInDays(SG_SNAPSHOT.fetchedAt) > 10;
 
-// "My playlists": your Spotify playlists, resolved to songs Apple can preview by scripts/build-playlists.mjs.
-const PLAYLISTS = (playlistsJson as unknown as PlaylistsFile).lists;
-const MINE = buildListPool(
-  PLAYLISTS.flatMap((l) => l.entries),
-  CATALOG,
-);
-
 /** The songs a round can draw from for each list. */
-const poolSongs = (pool: Pool): readonly Song[] => (pool === 'mine' ? MINE.pool : pool === 'sg-now' ? SG.pool : CATALOG);
+const poolSongs = (pool: Pool): readonly Song[] => poolSongsIn(POOLS, pool);
 
-// The guess box must be able to find every song that can be the answer (one entry per id; the catalogue's copy wins).
-const INDEX = indexSongs([...new Map([...SG.extra, ...MINE.extra, ...CATALOG].map((s) => [s.id, s] as const)).values()]);
-
-const engine = new ClipEngine();
 /** How many different songs to try before giving up when previews fail to load. */
 const MAX_LOAD_TRIES = 4;
 
@@ -99,6 +85,8 @@ export default function App() {
   const [art, setArt] = useState<string | null>(null);
   const [playing, setPlaying] = useState<{ id: number; seconds: number } | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  // "Play with friends": a party room instead of the solo game. A shared room link (?room=CODE) opens it directly.
+  const [mode, setMode] = useState<'solo' | 'party'>(() => (roomFromUrl() ? 'party' : 'solo'));
 
   const bufferRef = useRef<AudioBuffer | null>(null);
   const playedRef = useRef<Set<string>>(new Set());
@@ -133,8 +121,7 @@ export default function App() {
     bufferRef.current = null;
 
     for (let attempt = 0; attempt < MAX_LOAD_TRIES; attempt++) {
-      const song =
-        s.pool === 'sg-now' ? pickFromList(SG.pool, playedRef.current) : pickSong(poolSongs(s.pool), s, playedRef.current);
+      const song = pickNext(POOLS, s, playedRef.current);
       if (!song) {
         if (token === loadTokenRef.current) setPhase('empty');
         return;
@@ -281,6 +268,19 @@ export default function App() {
           </h1>
         </div>
         <div className="masthead__side">
+          {mode === 'solo' && (
+            <button
+              type="button"
+              className="btn btn--small btn--primary"
+              onClick={() => {
+                engine.stop();
+                setPlaying(null);
+                setMode('party');
+              }}
+            >
+              Play with friends
+            </button>
+          )}
           <span className="chip">
             Streak <b>{stats.streak}</b>
           </span>
@@ -290,182 +290,186 @@ export default function App() {
         </div>
       </header>
 
-      <main className="board">
-        {/* On phones the two halves of the setup sit either side of the game: languages, game, then the rest. */}
-        <section className="setup" aria-label="Game setup">
-          <div className="setup__langs">
-            <PoolSwitch
-              pool={settings.pool}
-              onChange={setPool}
-              mixCount={CATALOG.length}
-              mineCount={MINE.pool.length}
-              sgCount={SG.pool.length}
-              chartDate={SG_CHART_DATE}
-            />
-
-            <h2 className="kicker">
-              <span className="kicker__n">01</span>Pick your tongues
-            </h2>
-            <LanguagePicker selected={settings.langs} counts={counts} onChange={setLangs} disabled={sgMode} />
-            <p className="note">
-              {sgMode ? (
-                <>
-                  This week’s Apple Music Singapore chart, {poolSize} songs. Chart songs mix languages and eras, so the language and
-                  era filters are off.
-                  {SG_STALE &&
-                    (import.meta.env.DEV
-                      ? ' This snapshot is over 10 days old: restart npm run dev to refresh it.'
-                      : ` This is the chart from ${SG_CHART_DATE}; a newer one is on its way.`)}
-                </>
-              ) : settings.pool === 'mine' ? (
-                <>
-                  Songs from your Spotify playlists ({PLAYLISTS.map((l) => l.name).join(', ')}), drawn evenly from each language you
-                  switch on. {poolSize} in play right now.
-                </>
-              ) : (
-                <>Songs are drawn evenly from every language you switch on. {poolSize} in play right now.</>
-              )}
-            </p>
-          </div>
-
-          <div className="setup__rest">
-            <Segmented
-              name="difficulty"
-              number="02"
-              legend="How much do you get"
-              value={settings.difficulty}
-              options={DIFFICULTIES.map((d) => ({ id: d.id, label: d.label }))}
-              onChange={setDifficulty}
-            />
-            <p className="note note--mono">{difficultyNote}</p>
-
-            <Segmented
-              name="era"
-              number="03"
-              legend="Era"
-              value={settings.era}
-              options={ERAS.map((e) => ({ id: e.id, label: e.label, title: e.title }))}
-              onChange={setEra}
-              disabled={sgMode}
-            />
-
-            <ol className="howto">
-              <li>Press the record. You only get a sliver.</li>
-              <li>Guess, or skip to unlock more of the song.</li>
-              <li>Six tries. Fewer tries, bigger stamp.</li>
-            </ol>
-          </div>
-        </section>
-
-        <section className="stage" aria-label="Game">
-          {phase === 'empty' && sgMode && (
-            <div className="notice">
-              <h2>No chart yet</h2>
-              <p>
-                The Singapore list hasn’t been downloaded. Run <code>npm run snapshot:sg</code>, or switch back to your mix.
-              </p>
-              <button type="button" className="btn btn--primary" onClick={() => setPool('mix')}>
-                Back to My mix
-              </button>
-            </div>
-          )}
-
-          {phase === 'empty' && !sgMode && (
-            <div className="notice">
-              <h2>Nothing to play here</h2>
-              <p>
-                There are no {ERAS.find((e) => e.id === settings.era)?.label} songs in the languages you picked. Try another era or switch on
-                more languages.
-              </p>
-              <button type="button" className="btn btn--primary" onClick={() => setEra('any')}>
-                Any era
-              </button>
-            </div>
-          )}
-
-          {phase === 'error' && (
-            <div className="notice">
-              <h2>Couldn’t load a preview</h2>
-              <p>Song previews come from Apple’s servers. Check your connection and try again.</p>
-              <button type="button" className="btn btn--primary" onClick={() => void startRound(settings)}>
-                Try again
-              </button>
-            </div>
-          )}
-
-          {(phase === 'loading' || phase === 'ready') && (
-            <>
-              <Vinyl
-                loading={phase === 'loading'}
-                playing={playing}
-                label={vinylLabel}
-                ariaLabel={vinylAria}
-                art={finished ? art : null}
-                disabled={phase !== 'ready'}
-                onToggle={togglePlay}
+      {mode === 'party' ? (
+        <PartyView soloSettings={settings} audio={audio} onAudioChange={setAudio} onExit={() => setMode('solo')} />
+      ) : (
+        <main className="board">
+          {/* On phones the two halves of the setup sit either side of the game: languages, game, then the rest. */}
+          <section className="setup" aria-label="Game setup">
+            <div className="setup__langs">
+              <PoolSwitch
+                pool={settings.pool}
+                onChange={setPool}
+                mixCount={CATALOG.length}
+                mineCount={MINE.pool.length}
+                sgCount={SG.pool.length}
+                chartDate={SG_CHART_DATE}
               />
 
-              <div className="deck">
-                <p className="tries" aria-hidden="true">
-                  {round && !finished ? `Try ${round.guesses.length + 1} of ${round.ladder.length}` : finished ? 'Round over' : 'Tuning in…'}
+              <h2 className="kicker">
+                <span className="kicker__n">01</span>Pick your tongues
+              </h2>
+              <LanguagePicker selected={settings.langs} counts={counts} onChange={setLangs} disabled={sgMode} />
+              <p className="note">
+                {sgMode ? (
+                  <>
+                    This week’s Apple Music Singapore chart, {poolSize} songs. Chart songs mix languages and eras, so the language and
+                    era filters are off.
+                    {SG_STALE &&
+                      (import.meta.env.DEV
+                        ? ' This snapshot is over 10 days old: restart npm run dev to refresh it.'
+                        : ` This is the chart from ${SG_CHART_DATE}; a newer one is on its way.`)}
+                  </>
+                ) : settings.pool === 'mine' ? (
+                  <>
+                    Songs from your Spotify playlists ({PLAYLISTS.map((l) => l.name).join(', ')}), drawn evenly from each language you
+                    switch on. {poolSize} in play right now.
+                  </>
+                ) : (
+                  <>Songs are drawn evenly from every language you switch on. {poolSize} in play right now.</>
+                )}
+              </p>
+            </div>
+
+            <div className="setup__rest">
+              <Segmented
+                name="difficulty"
+                number="02"
+                legend="How much do you get"
+                value={settings.difficulty}
+                options={DIFFICULTIES.map((d) => ({ id: d.id, label: d.label }))}
+                onChange={setDifficulty}
+              />
+              <p className="note note--mono">{difficultyNote}</p>
+
+              <Segmented
+                name="era"
+                number="03"
+                legend="Era"
+                value={settings.era}
+                options={ERAS.map((e) => ({ id: e.id, label: e.label, title: e.title }))}
+                onChange={setEra}
+                disabled={sgMode}
+              />
+
+              <ol className="howto">
+                <li>Press the record. You only get a sliver.</li>
+                <li>Guess, or skip to unlock more of the song.</li>
+                <li>Six tries. Fewer tries, bigger stamp.</li>
+              </ol>
+            </div>
+          </section>
+
+          <section className="stage" aria-label="Game">
+            {phase === 'empty' && sgMode && (
+              <div className="notice">
+                <h2>No chart yet</h2>
+                <p>
+                  The Singapore list hasn’t been downloaded. Run <code>npm run snapshot:sg</code>, or switch back to your mix.
                 </p>
-                <VolumeControl prefs={audio} onChange={setAudio} />
+                <button type="button" className="btn btn--primary" onClick={() => setPool('mix')}>
+                  Back to My mix
+                </button>
               </div>
+            )}
 
-              {round ? (
-                <Ladder round={round} />
-              ) : (
-                <ol className="ladder is-skeleton" aria-hidden="true">
-                  {ladder.map((n, i) => (
-                    <li key={i} className="ladder__cell is-future">
-                      <span className="ladder__time">{fmtSeconds(n)}</span>
-                    </li>
-                  ))}
-                </ol>
-              )}
+            {phase === 'empty' && !sgMode && (
+              <div className="notice">
+                <h2>Nothing to play here</h2>
+                <p>
+                  There are no {ERAS.find((e) => e.id === settings.era)?.label} songs in the languages you picked. Try another era or switch on
+                  more languages.
+                </p>
+                <button type="button" className="btn btn--primary" onClick={() => setEra('any')}>
+                  Any era
+                </button>
+              </div>
+            )}
 
-              {finished && round ? (
-                <Reveal
-                  round={round}
-                  art={art}
-                  rank={round.pool === 'sg-now' ? SG.rank.get(round.song.id) : undefined}
-                  playingFull={playing !== null}
-                  onPlayFull={togglePlay}
-                  onNext={() => void startRound(settings)}
+            {phase === 'error' && (
+              <div className="notice">
+                <h2>Couldn’t load a preview</h2>
+                <p>Song previews come from Apple’s servers. Check your connection and try again.</p>
+                <button type="button" className="btn btn--primary" onClick={() => void startRound(settings)}>
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {(phase === 'loading' || phase === 'ready') && (
+              <>
+                <Vinyl
+                  loading={phase === 'loading'}
+                  playing={playing}
+                  label={vinylLabel}
+                  ariaLabel={vinylAria}
+                  art={finished ? art : null}
+                  disabled={phase !== 'ready'}
+                  onToggle={togglePlay}
                 />
-              ) : (
-                <>
-                  {showHint && round && (
-                    <div className="hint" style={langStyle(round.song.lang)}>
-                      {round.hint ? (
-                        <p>
-                          Hint: it’s a{' '}
-                          <span className="tag">
-                            <span lang={languageInfo(round.song.lang).htmlLang}>{languageInfo(round.song.lang).glyph}</span>{' '}
-                            {languageInfo(round.song.lang).name}
-                          </span>{' '}
-                          song.
-                        </p>
-                      ) : (
-                        <button type="button" className="linkish" onClick={() => setRound({ ...round, hint: true })}>
-                          Stuck? Reveal the language
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  <GuessBox
-                    index={INDEX}
-                    disabled={phase !== 'ready' || !round}
-                    skipGain={round ? skipGain(round) : null}
-                    onGuess={guess}
-                    onSkip={skip}
+
+                <div className="deck">
+                  <p className="tries" aria-hidden="true">
+                    {round && !finished ? `Try ${round.guesses.length + 1} of ${round.ladder.length}` : finished ? 'Round over' : 'Tuning in…'}
+                  </p>
+                  <VolumeControl prefs={audio} onChange={setAudio} />
+                </div>
+
+                {round ? (
+                  <Ladder round={round} />
+                ) : (
+                  <ol className="ladder is-skeleton" aria-hidden="true">
+                    {ladder.map((n, i) => (
+                      <li key={i} className="ladder__cell is-future">
+                        <span className="ladder__time">{fmtSeconds(n)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+
+                {finished && round ? (
+                  <Reveal
+                    round={round}
+                    art={art}
+                    rank={round.pool === 'sg-now' ? SG.rank.get(round.song.id) : undefined}
+                    playingFull={playing !== null}
+                    onPlayFull={togglePlay}
+                    onNext={() => void startRound(settings)}
                   />
-                </>
-              )}
-            </>
-          )}
-        </section>
-      </main>
+                ) : (
+                  <>
+                    {showHint && round && (
+                      <div className="hint" style={langStyle(round.song.lang)}>
+                        {round.hint ? (
+                          <p>
+                            Hint: it’s a{' '}
+                            <span className="tag">
+                              <span lang={languageInfo(round.song.lang).htmlLang}>{languageInfo(round.song.lang).glyph}</span>{' '}
+                              {languageInfo(round.song.lang).name}
+                            </span>{' '}
+                            song.
+                          </p>
+                        ) : (
+                          <button type="button" className="linkish" onClick={() => setRound({ ...round, hint: true })}>
+                            Stuck? Reveal the language
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <GuessBox
+                      index={INDEX}
+                      disabled={phase !== 'ready' || !round}
+                      skipGain={round ? skipGain(round) : null}
+                      onGuess={guess}
+                      onSkip={skip}
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </section>
+        </main>
+      )}
 
       <footer className="footer">
         <p>

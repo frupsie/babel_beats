@@ -1,5 +1,5 @@
-import type { Song } from '../types';
-import { compact, hasHan, stripDecor, titleKey } from './text';
+import type { Song } from '../types.ts';
+import { compact, hasHan, stripDecor, titleKey } from './text.ts';
 
 export interface IndexedSong {
   song: Song;

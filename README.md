@@ -5,16 +5,18 @@ This is a mini game project where users will be guessing the name of the song af
 Guess the song from a split-second clip, in the languages **you** choose (English, Mandarin, Japanese out of the box).
 Every wrong guess or skip unlocks a longer clip; you get six tries.
 
-React + Vite + TypeScript. No backend: audio comes straight from Apple's iTunes Search API, which serves
-30-second previews with open CORS headers, so the browser can cut sample-accurate clips (down to 0.1 s) itself.
+React + Vite + TypeScript. Audio comes straight from Apple's iTunes Search API, which serves 30-second previews with
+open CORS headers, so the browser can cut sample-accurate clips (down to 0.1 s) itself. Solo play needs no server at
+all; **Play with friends** (live rooms) needs the small Node server in `server/`.
 
 ## Run it
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm test           # unit tests (text folding, guess matching, round rules)
-npm run build      # static site in dist/, deployable to any static host
+npm run dev        # http://localhost:5173, party rooms included
+npm test           # unit tests (text folding, guess matching, round rules, party rooms)
+npm run build      # the site in dist/; solo play works from any static host
+npm start          # the production server: dist/ plus party rooms, on PORT (default 3000)
 ```
 
 ## How it works
@@ -32,10 +34,45 @@ npm run build      # static site in dist/, deployable to any static host
 | The rules for "is this Apple hit really that Spotify song?" (tested) | `scripts/lib/playlist-match.mjs` |
 | Shared, rate-limited, cached Apple client and Chinese-text helpers | `scripts/lib/itunes.mjs`, `scripts/lib/han.mjs` |
 | "Singapore now" logic shared by that script and the app | `src/lib/sgNow.ts` |
+| The song lists, shared by the browser and the party server | `src/lib/pools.ts` (built in `src/lib/songData.ts`) |
+| Party rooms: messages and validation, the room rules (tested), the screens | `src/party/protocol.ts`, `src/party/room.ts`, `src/party/PartyView.tsx` |
+| Party server (WebSockets at `/party`) and the production server | `server/party.ts`, `server/index.ts` |
 
 The catalogue is generated data, committed so the app works without running the script.
 At play time the app asks iTunes for a fresh preview URL for the chosen song and falls back to the URL stored in the
 catalogue if that lookup fails.
+
+## Play with friends
+
+**Play with friends** (top right) opens a live room. The host picks the list, languages, era, difficulty, number of songs
+(5, 10 or 15) and time per song (30, 60 or 90 s), and shares the four-letter room code or invite link
+(`…/?room=ABCD`). Up to 12 players.
+
+- **A round:** everyone's phone or computer downloads the song's preview, then a 3-2-1 countdown and the first clip plays
+  for everyone at the same moment. Each player then plays like solo: replay the clip, guess, or skip for a longer one.
+  The round ends when everyone is done or the time runs out, the answer shows for 12 seconds (the host can skip ahead),
+  and after the last song come the final scores.
+- **Points:** 1000 for the first try, 850, 700, 550, 400, 250 for later tries, minus up to half for taking longer. A
+  miss scores 0.
+- **Who decides:** the server picks the songs, keeps the time and checks every guess, so a slow or modified page can't
+  change the result. Each player's own device plays the audio. The answer's id is sent to every player so their page
+  can download it, so someone digging in the browser's developer tools could peek. It's a game for friends.
+- **Dropping out:** a player whose connection drops keeps their seat and score and rejoins by itself; reloading the page
+  rejoins too. A host who is away for 20 s hands the host role to the next player. A room nobody is in is deleted
+  after 10 minutes. Rooms live in the server's memory, so restarting or redeploying the server ends games in progress.
+- **Not in your stats:** party rounds don't count toward your solo streak or stats.
+
+**Hosting.** Static hosts (Vercel, Netlify, GitHub Pages, Cloudflare Pages) can serve the site, but not party rooms:
+those need a long-running Node process that accepts WebSockets. Run the whole thing as one Node web service instead,
+on any host that supports WebSockets (for example Render, Railway or Fly.io):
+
+- build command: `npm ci && npm run build`
+- start command: `npm start` (it listens on the `PORT` the host provides; `/healthz` answers `ok` for health checks)
+- Node 22.18 or newer (`.nvmrc` and `engines` say 24).
+
+Free tiers that put the server to sleep when idle are fine for friends: the first visitor waits a few seconds while it
+wakes up. To keep the site on a static host and run only the rooms elsewhere, build with
+`VITE_PARTY_URL=wss://your-server.example/party npm run build`.
 
 ## Singapore now
 

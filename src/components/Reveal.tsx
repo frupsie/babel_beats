@@ -9,7 +9,10 @@ interface Props {
   rank?: number;
   playingFull: boolean;
   onPlayFull: () => void;
-  onNext: () => void;
+  /** Leave out where the player doesn't decide when to move on (a party round, unless you host it). */
+  onNext?: () => void;
+  /** Shown in place of the Next button when there is none, e.g. "Next round in 8s". */
+  nextNote?: string;
 }
 
 function stampText(round: RoundState): string {
@@ -20,7 +23,7 @@ function stampText(round: RoundState): string {
 }
 
 /** Shown after the round ends: the answer, its cover, and a rubber-stamp verdict. */
-export function Reveal({ round, art, rank, playingFull, onPlayFull, onNext }: Props) {
+export function Reveal({ round, art, rank, playingFull, onPlayFull, onNext, nextNote }: Props) {
   const { song, status, guesses } = round;
   const info = languageInfo(song.lang);
   const won = status === 'won';
@@ -60,15 +63,18 @@ export function Reveal({ round, art, rank, playingFull, onPlayFull, onNext }: Pr
       </div>
 
       <div className="reveal__actions">
-        <button type="button" className="btn btn--primary" onClick={onNext}>
-          Next song →
-        </button>
+        {onNext && (
+          <button type="button" className="btn btn--primary" onClick={onNext}>
+            Next song →
+          </button>
+        )}
         <button type="button" className="btn" onClick={onPlayFull}>
           {playingFull ? 'Stop' : 'Hear 30s'}
         </button>
         <a className="btn" href={song.trackViewUrl} target="_blank" rel="noreferrer">
           Apple Music ↗
         </a>
+        {!onNext && nextNote && <p className="reveal__next">{nextNote}</p>}
       </div>
     </section>
   );
