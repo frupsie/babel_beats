@@ -5,6 +5,7 @@
  */
 
 import { clipStart } from './clipStart';
+import { PlaybackSession, browserPlaybackEnv } from './playbackSession';
 
 /** Where clips start in each preview (skipping a quiet opening), worked out once per decoded preview. */
 const starts = new WeakMap<AudioBuffer, number>();
@@ -55,8 +56,13 @@ export class ClipEngine {
     }
   }
 
+  /** Keeps iPhones from muting clips when the silent switch is on (see playbackSession.ts). */
+  private session: PlaybackSession | null = null;
+
   private output(): { ctx: AudioContext; master: GainNode } {
     if (!this.ctx || !this.master) {
+      // Tell iOS this page is a music player before its audio context exists.
+      this.session ??= new PlaybackSession(browserPlaybackEnv());
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
       this.master.gain.value = this.masterLevel;
@@ -69,6 +75,7 @@ export class ClipEngine {
   play(buffer: AudioBuffer, seconds: number, onEnded: () => void): void {
     this.stop();
     const { ctx, master } = this.output();
+    this.session?.claim();
     void ctx.resume();
 
     const offset = startOf(buffer);

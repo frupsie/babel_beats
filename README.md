@@ -146,6 +146,11 @@ accepted as guesses.
   breath, near-silence) is skipped: every clip in a round starts at the first moment the preview stays at a quarter of
   its typical loudness for 200 ms, never more than 3 s in (`src/lib/clipStart.ts`). In a sample of 24 playlist songs, 16
   were untouched and 8 skipped 0.2 to 1.4 s.
+- **iPhone silent switch:** iOS normally mutes web audio when the ring/silent switch is on silent. The game tells iOS it is
+  a music player instead (`src/lib/playbackSession.ts`): on iOS 17+ through Safari's Audio Session API, and on older iOS
+  by playing a silent, looping `<audio>` while you play (paused when the page goes to the background). Like any music
+  player, starting a clip pauses music playing in other apps. Tested with a simulated iPhone in a desktop browser, not
+  on a real device.
 - Settings, stats and volume live in `localStorage`; nothing is sent anywhere.
 - **Bundle size:** the song lists (`src/data/*.json`) are compiled into the JavaScript so the site stays plain static
   files. With both playlists that is about 1.1 MB (roughly 300 kB gzipped). If it ever matters, load `playlists.json` with
