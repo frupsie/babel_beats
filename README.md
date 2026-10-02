@@ -66,7 +66,8 @@ catalogue if that lookup fails.
 those need a long-running Node process that accepts WebSockets. Run the whole thing as one Node web service instead,
 on any host that supports WebSockets (for example Render, Railway or Fly.io):
 
-- build command: `npm ci && npm run build`
+- on Render, `render.yaml` sets all of this up: New + → Blueprint → pick the repository
+- build command: `npm ci --include=dev && npm run build`
 - start command: `npm start` (it listens on the `PORT` the host provides; `/healthz` answers `ok` for health checks)
 - Node 22.18 or newer (`.nvmrc` and `engines` say 24).
 

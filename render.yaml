@@ -1,0 +1,14 @@
+# Render blueprint: one free Node web service that serves the game and runs party rooms.
+# On render.com: New + → Blueprint → pick this repository. Every push to main redeploys it.
+services:
+  - type: web
+    name: babel-beats
+    runtime: node
+    plan: free
+    # Dev dependencies (Vite, TypeScript) are needed to build, even if the host sets NODE_ENV=production.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
