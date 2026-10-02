@@ -1,5 +1,6 @@
-<<<<<<< HEAD
 # Babel Beats
+
+This is a mini game project where users will be guessing the name of the song after hearing it with specific durations. There are different languages and difficulties available for users to explore and challenge themselves.
 
 Guess the song from a split-second clip, in the languages **you** choose (English, Mandarin, Japanese out of the box).
 Every wrong guess or skip unlocks a longer clip; you get six tries.
@@ -155,7 +156,3 @@ accepted as guesses.
 - **Bundle size:** the song lists (`src/data/*.json`) are compiled into the JavaScript so the site stays plain static
   files. With both playlists that is about 1.1 MB (roughly 300 kB gzipped). If it ever matters, load `playlists.json` with
   a dynamic `import()` the first time the My playlists tab is opened.
-=======
-# babel_beats
-This is a mini game project where users will be guessing the name of the song after hearing it with specific durations. There are different languages and difficulties available for users to explore and challenge themselves.
->>>>>>> deb45b024318e6b62840a8892d4c41bed78f853c
