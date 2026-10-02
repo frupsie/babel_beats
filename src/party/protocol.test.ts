@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PARTY_SETTINGS, NAME_MAX, cleanName, cleanSettings, normaliseCode, parseClientMsg, pointsFor, randomRoomCode } from './protocol';
+import {
+  DEFAULT_PARTY_SETTINGS,
+  NAME_MAX,
+  cleanName,
+  cleanSettings,
+  isRoomCode,
+  normaliseCode,
+  parseClientMsg,
+  pointsFor,
+  randomRoomCode,
+} from './protocol';
 
 const SECRET = 'abcdefghijklmnop1234';
 const msg = (v: unknown) => parseClientMsg(JSON.stringify(v));
 
 describe('parseClientMsg', () => {
   it('accepts well-formed messages', () => {
-    expect(msg({ t: 'join', secret: SECRET, name: ' Ann ', code: 'ab-cd' })).toEqual({ t: 'join', secret: SECRET, name: 'Ann', code: 'ABCD' });
+    expect(msg({ t: 'join', secret: SECRET, name: ' Ann ', code: 'k7-p3' })).toEqual({ t: 'join', secret: SECRET, name: 'Ann', code: 'K7P3' });
     expect(msg({ t: 'guess', no: 3, songId: '535824738', text: 'qing tian' })).toEqual({ t: 'guess', no: 3, songId: '535824738', text: 'qing tian' });
     expect(msg({ t: 'skip', no: 1 })).toEqual({ t: 'skip', no: 1 });
     expect(msg({ t: 'start', extra: 'ignored' })).toEqual({ t: 'start' });
@@ -65,12 +75,29 @@ describe('cleanSettings', () => {
 });
 
 describe('room codes', () => {
-  it('are four easy-to-read letters', () => {
-    for (let i = 0; i < 50; i++) expect(randomRoomCode()).toMatch(/^[A-HJKMNP-Z]{4}$/);
+  it('are four easy-to-read characters, always mixing letters and digits', () => {
+    for (let i = 0; i < 500; i++) {
+      const code = randomRoomCode();
+      expect(code).toMatch(/^[A-HJKMNP-Z2-9]{4}$/); // never I, L, O, 0 or 1
+      expect(code).toMatch(/[A-Z]/);
+      expect(code).toMatch(/[2-9]/);
+    }
+  });
+
+  it('keeps trying until a code has both, even when the dice keep landing on letters', () => {
+    let n = 0;
+    // Picks 1-11 are all "A" (two letter-only codes thrown away), then pick 12 is the last digit, "9".
+    const rand = () => (n++ < 11 ? 0 : 0.99);
+    expect(randomRoomCode(rand)).toBe('AAA9');
   });
 
   it('are read forgivingly', () => {
-    expect(normaliseCode(' xy z-w ')).toBe('XYZW');
+    expect(normaliseCode(' k7 p-3 ')).toBe('K7P3');
+  });
+
+  it('turn away look-alike characters that are never used', () => {
+    for (const bad of ['K7P0', 'K7PO', 'K1P3', 'KIP3', 'KLP3']) expect(isRoomCode(bad), bad).toBe(false);
+    expect(isRoomCode('K7P3')).toBe(true);
   });
 });
 

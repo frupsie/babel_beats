@@ -45,8 +45,8 @@ catalogue if that lookup fails.
 ## Play with friends
 
 **Play with friends** (top right) opens a live room. The host picks the list, languages, era, difficulty, number of songs
-(5, 10 or 15) and time per song (30, 60 or 90 s), and shares the four-letter room code or invite link
-(`…/?room=ABCD`). Up to 12 players.
+(5, 10 or 15) and time per song (30, 60 or 90 s), and shares the room code (four letters and digits, e.g. K7P3) or invite link
+(`…/?room=K7P3`). Up to 12 players.
 
 - **A round:** everyone's phone or computer downloads the song's preview, then a 3-2-1 countdown and the first clip plays
   for everyone at the same moment. Each player then plays like solo: replay the clip, guess, or skip for a longer one.

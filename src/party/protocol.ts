@@ -107,17 +107,23 @@ export type ServerMsg =
 
 // ------------------------------------------------------------------ validation (the server trusts nothing it receives)
 
-const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ'; // no I, L or O: easy to read out loud
+// Letters and digits that can't be mistaken for one another when read out or typed: no I, L, O, 0 or 1.
+const CODE_LETTERS = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+const CODE_DIGITS = '23456789';
+const CODE_ALPHABET = CODE_LETTERS + CODE_DIGITS;
 export const CODE_LENGTH = 4;
 
+/** A room code such as "K7P3": always at least one letter and one digit. */
 export function randomRoomCode(rand: () => number = Math.random): string {
-  let code = '';
-  for (let i = 0; i < CODE_LENGTH; i++) code += CODE_ALPHABET[Math.floor(rand() * CODE_ALPHABET.length)];
-  return code;
+  for (;;) {
+    let code = '';
+    for (let i = 0; i < CODE_LENGTH; i++) code += CODE_ALPHABET[Math.floor(rand() * CODE_ALPHABET.length)];
+    if (/[A-Z]/.test(code) && /[0-9]/.test(code)) return code;
+  }
 }
 
 export function normaliseCode(input: string): string {
-  return input.toUpperCase().replace(/[^A-Z]/g, '').slice(0, CODE_LENGTH);
+  return input.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CODE_LENGTH);
 }
 
 export function isRoomCode(value: unknown): value is string {

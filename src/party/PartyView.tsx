@@ -154,7 +154,7 @@ function PartyEntry({ party, soloSettings, onBack }: { party: Party; soloSetting
                 autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="ABCD"
+                placeholder="e.g. K7P3"
                 onChange={(e) => setCode(normaliseCode(e.target.value))}
               />
             </label>
