@@ -137,3 +137,11 @@ export function applyGuess(round: RoundState, entry: GuessEntry): RoundState {
   const status = entry.kind === 'right' ? 'won' : guesses.length >= round.ladder.length ? 'lost' : 'playing';
   return { ...round, guesses, status };
 }
+
+/** Ends the round as lost without using the remaining tries. */
+export function giveUp(round: RoundState): RoundState {
+  return round.status === 'playing' ? { ...round, status: 'lost' } : round;
+}
+
+/** How long after a skip the longer clip starts by itself, so a player who wants to give up or skip again can. */
+export const AUTOPLAY_AFTER_SKIP_MS = 1000;

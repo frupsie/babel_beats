@@ -201,6 +201,9 @@ export class Room {
       case 'skip':
         this.attempt(p, msg);
         return;
+      case 'giveUp':
+        this.giveUp(p, msg.no);
+        return;
       case 'next':
         if (isHost && this.phase === 'reveal') this.advance();
         return;
@@ -304,6 +307,16 @@ export class Room {
     } else if (p.tries.length >= round.ladder.length) {
       p.status = 'lost';
     }
+    this.maybeEndRound();
+    this.broadcast();
+  }
+
+  /** The player stops guessing this round: no points, and the tries used so far stay as they were. */
+  private giveUp(p: PlayerRec, no: number): void {
+    const round = this.round;
+    if (this.phase !== 'playing' || !round || round.no !== no || p.status !== 'playing') return;
+    if (round.goAt === null || this.now() < round.goAt) return;
+    p.status = 'lost';
     this.maybeEndRound();
     this.broadcast();
   }

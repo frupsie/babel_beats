@@ -6,6 +6,7 @@ import {
   applyGuess,
   currentClip,
   eraOf,
+  giveUp,
   inEra,
   ladderFor,
   newRound,
@@ -91,6 +92,15 @@ describe('a round', () => {
     expect(round.status).toBe('playing');
     round = applyGuess(round, { kind: 'skip' });
     expect(round.status).toBe('lost');
+  });
+
+  it('can be given up at any point, keeping the tries used so far', () => {
+    let round = applyGuess(newRound(target, ladderFor('medium')), { kind: 'skip' });
+    round = giveUp(round);
+    expect(round.status).toBe('lost');
+    expect(round.guesses).toHaveLength(1);
+    const won = applyGuess(newRound(target, ladderFor('easy')), { kind: 'right', text: '' });
+    expect(giveUp(won)).toBe(won); // a finished round stays as it was
   });
 
   it('ignores guesses once it is over', () => {

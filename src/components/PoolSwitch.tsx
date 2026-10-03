@@ -31,6 +31,7 @@ export function PoolSwitch({ pool, onChange, mixCount, mineCount, sgCount, chart
   return (
     <fieldset className="pool">
       <legend className="sr-only">Song list</legend>
+      <div className="pool__grid">
       {options.map((o) => (
         <label key={o.id} className="pool__opt">
           <input type="radio" name="pool" value={o.id} checked={pool === o.id} disabled={o.disabled} onChange={() => onChange(o.id)} />
@@ -40,6 +41,7 @@ export function PoolSwitch({ pool, onChange, mixCount, mineCount, sgCount, chart
           </span>
         </label>
       ))}
+      </div>
     </fieldset>
   );
 }

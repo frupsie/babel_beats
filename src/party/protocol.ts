@@ -95,6 +95,7 @@ export type ClientMsg =
   | { t: 'loadFailed'; no: number }
   | { t: 'guess'; no: number; songId: string | null; text: string }
   | { t: 'skip'; no: number }
+  | { t: 'giveUp'; no: number }
   | { t: 'next' }
   | { t: 'lobby' }
   | { t: 'leave' };
@@ -195,6 +196,7 @@ export function parseClientMsg(raw: string): ClientMsg | null {
     case 'loaded':
     case 'loadFailed':
     case 'skip':
+    case 'giveUp':
       return isRoundNo(v.no) ? { t: v.t, no: v.no } : null;
     case 'guess': {
       const songId = v.songId === null ? null : typeof v.songId === 'string' && /^\d{1,20}$/.test(v.songId) ? v.songId : undefined;

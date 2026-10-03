@@ -19,6 +19,7 @@ describe('parseClientMsg', () => {
     expect(msg({ t: 'join', secret: SECRET, name: ' Ann ', code: 'k7-p3' })).toEqual({ t: 'join', secret: SECRET, name: 'Ann', code: 'K7P3' });
     expect(msg({ t: 'guess', no: 3, songId: '535824738', text: 'qing tian' })).toEqual({ t: 'guess', no: 3, songId: '535824738', text: 'qing tian' });
     expect(msg({ t: 'skip', no: 1 })).toEqual({ t: 'skip', no: 1 });
+    expect(msg({ t: 'giveUp', no: 2 })).toEqual({ t: 'giveUp', no: 2 });
     expect(msg({ t: 'start', extra: 'ignored' })).toEqual({ t: 'start' });
   });
 

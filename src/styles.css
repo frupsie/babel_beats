@@ -455,9 +455,10 @@ button {
 }
 
 /* Two big tabs: the curated language mix, or the Singapore chart. */
+/* The list tabs sit side by side, or stack when they are too narrow for "Singapore" and "playlists" (the lobby card,
+   the smallest phones). That depends on the tabs' own width, so it is a container query. */
 .pool {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  container: pool / inline-size;
   min-width: 0;
   margin: 0 0 28px;
   padding: 0;
@@ -471,8 +472,28 @@ button {
   position: relative;
   min-width: 0;
 }
+.pool__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .pool__opt + .pool__opt {
   border-left: 3px solid var(--ink);
+}
+@container pool (max-width: 340px) {
+  .pool__grid {
+    grid-template-columns: 1fr;
+  }
+  .pool__opt + .pool__opt {
+    border-top: 3px solid var(--ink);
+    border-left: 0;
+  }
+  .pool__face {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    column-gap: 12px;
+  }
 }
 .pool__opt input {
   position: absolute;
@@ -574,10 +595,13 @@ button {
   transform: none;
 }
 
+.howto__title {
+  margin-top: 30px;
+}
 .howto {
   display: grid;
   gap: 9px;
-  margin: 30px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   counter-reset: step;
@@ -685,6 +709,13 @@ button {
   stroke-dashoffset: 1;
   animation: ring linear forwards;
 }
+/* While a song downloads, the ring fills in ink as the download progresses. */
+.vinyl__load {
+  stroke: var(--ink);
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  transition: stroke-dashoffset 0.15s linear;
+}
 .vinyl__disc {
   position: absolute;
   inset: 5.5%;
@@ -774,15 +805,15 @@ button {
   gap: 12px;
   margin: 12px 0 10px;
 }
+/* The status line wraps rather than cutting off: next to the volume control there is little room on small phones, and
+   some messages (party rounds above all) are a sentence long. */
 .tries {
   min-width: 0;
   margin: 0;
-  overflow: hidden;
-  font: 500 0.68rem var(--f-mono);
+  font: 500 0.68rem / 1.45 var(--f-mono);
   letter-spacing: 0.16em;
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
+  overflow-wrap: break-word;
   color: var(--ink-soft);
 }
 
@@ -1053,6 +1084,20 @@ button {
   color: var(--ink-soft);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.guess__hint {
+  margin: 8px 2px 0;
+  font: 500 0.68rem / 1.5 var(--f-mono);
+  color: var(--ink-soft);
+}
+.guess__giveup {
+  display: block;
+  margin: 16px auto 0;
+  font-size: 0.85rem;
+}
+.linkish:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .guess__nudge {
   margin: 10px 2px 0;
@@ -1565,6 +1610,34 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/* ------------------------------------------------------------------ centring around hard shadows */
+
+/* A box with a solid shadow on its right looks pushed right when it reaches the edge of the page: the shadow eats into
+   the right-hand margin. Giving those boxes a right margin as wide as their shadow balances the ink on the page. */
+/* The game card reaches the right edge at every width (alone on phones, as the right column on desktop).
+   min-width: 0 lets it shrink past its longest line on the narrowest phones (320 px) instead of spilling into that
+   margin. */
+.stage {
+  min-width: 0;
+  margin-right: 8px;
+}
+@media (max-width: 899px) {
+  .pool,
+  .room-card {
+    min-width: 0;
+    margin-right: 4px;
+  }
+}
+@media (max-width: 520px) {
+  .stage {
+    margin-right: 6px;
+  }
+}
+/* The stats sheet is centred by the browser; nudge it by half its shadow so it looks centred too. */
+.sheet {
+  translate: -4px 0;
 }
 
 /* ------------------------------------------------------------------ motion */

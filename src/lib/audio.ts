@@ -29,13 +29,19 @@ export class ClipEngine {
   private cache = new Map<string, AudioBuffer>();
   private current: AudioBufferSourceNode | null = null;
 
-  /** Fetches and decodes a preview (cached). Safe to call before any user gesture. */
-  async load(url: string, signal?: AbortSignal): Promise<AudioBuffer> {
+  /**
+   * Fetches and decodes a preview (cached). Safe to call before any user gesture. `onProgress` hears how much of the
+   * download is done (0–1), when the server says how big the file is.
+   */
+  async load(url: string, signal?: AbortSignal, onProgress?: (done: number) => void): Promise<AudioBuffer> {
     const cached = this.cache.get(url);
-    if (cached) return cached;
+    if (cached) {
+      onProgress?.(1);
+      return cached;
+    }
     const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`Preview download failed (HTTP ${res.status})`);
-    const data = await res.arrayBuffer();
+    const data = await readWithProgress(res, onProgress);
     // An offline context can decode without needing the autoplay-gated real one.
     this.decoder ??= new OfflineAudioContext(2, 44100, 44100);
     const buffer = await this.decoder.decodeAudioData(data);
@@ -69,6 +75,24 @@ export class ClipEngine {
       this.master.connect(this.ctx.destination);
     }
     return { ctx: this.ctx, master: this.master };
+  }
+
+  /** True once the page may start sound by itself (the visitor has clicked, tapped or pressed a key). */
+  get ready(): boolean {
+    return this.ctx?.state === 'running';
+  }
+
+  /**
+   * Unlocks audio on the visitor's first click, tap or key press anywhere on the page, so that later clips (a new
+   * round's first clip, the longer clip after a skip) can play by themselves. Browsers block sound before that.
+   */
+  unlockOnFirstGesture(): void {
+    const events = ['pointerdown', 'touchend', 'keydown'] as const;
+    const onGesture = () => {
+      this.unlock();
+      if (this.ready) for (const e of events) window.removeEventListener(e, onGesture, true);
+    };
+    for (const e of events) window.addEventListener(e, onGesture, true);
   }
 
   /**
@@ -123,4 +147,49 @@ export class ClipEngine {
       /* already stopped */
     }
   }
+}
+
+/** Reads a response body, reporting progress when the size is known; otherwise reads it in one go. */
+async function readWithProgress(res: Response, onProgress?: (done: number) => void): Promise<ArrayBuffer> {
+  const total = Number(res.headers.get('content-length'));
+  if (!onProgress || !res.body || !Number.isFinite(total) || total <= 0) {
+    const data = await res.arrayBuffer();
+    onProgress?.(1);
+    return data;
+  }
+  const reader = res.body.getReader();
+  const out = new Uint8Array(total);
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (received + value.length > out.length) {
+      // The server sent more than it announced (compressed transfer): fall back to collecting the pieces.
+      const grown = new Uint8Array(received + value.length);
+      grown.set(out.subarray(0, received));
+      grown.set(value, received);
+      return finishGrowing(reader, grown, onProgress);
+    }
+    out.set(value, received);
+    received += value.length;
+    onProgress(Math.min(1, received / total));
+  }
+  onProgress(1);
+  return out.buffer.slice(0, received);
+}
+
+async function finishGrowing(reader: ReadableStreamDefaultReader<Uint8Array>, start: Uint8Array, onProgress: (done: number) => void) {
+  const parts = [start];
+  let size = start.length;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    parts.push(value);
+    size += value.length;
+  }
+  const out = new Uint8Array(size);
+  let at = 0;
+  for (const p of parts) (out.set(p, at), (at += p.length));
+  onProgress(1);
+  return out.buffer;
 }

@@ -12,6 +12,8 @@ interface Props {
   art?: string | null;
   disabled?: boolean;
   onToggle: () => void;
+  /** While loading: how much of the song has downloaded (0–1), shown as the ring filling up. */
+  progress?: number | null;
 }
 
 const PlayIcon = () => (
@@ -27,11 +29,15 @@ const StopIcon = () => (
 );
 
 /** The record: press the label to play. The ring around it fills in real time as the clip plays. */
-export function Vinyl({ loading, playing, label, ariaLabel, art, disabled, onToggle }: Props) {
+export function Vinyl({ loading, playing, label, ariaLabel, art, disabled, onToggle, progress = null }: Props) {
+  const showProgress = loading && progress !== null;
   return (
     <div className={cx('vinyl', playing && 'is-playing', loading && 'is-loading')}>
       <svg className="vinyl__ring" viewBox="0 0 100 100" aria-hidden="true">
         <circle className="vinyl__track" cx="50" cy="50" r="48" />
+        {showProgress && (
+          <circle className="vinyl__load" cx="50" cy="50" r="48" pathLength={1} style={{ strokeDashoffset: 1 - progress }} />
+        )}
         {playing && (
           <circle
             key={playing.id}
@@ -51,7 +57,7 @@ export function Vinyl({ loading, playing, label, ariaLabel, art, disabled, onTog
       </div>
       <button type="button" className={cx('vinyl__btn', art && 'has-art')} onClick={onToggle} disabled={disabled} aria-label={ariaLabel}>
         {playing ? <StopIcon /> : <PlayIcon />}
-        <span className="vinyl__time">{label}</span>
+        <span className="vinyl__time">{showProgress ? `${Math.round(progress * 100)}%` : label}</span>
       </button>
     </div>
   );

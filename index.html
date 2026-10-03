@@ -11,14 +11,71 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2317140f'/%3E%3Ccircle cx='50' cy='50' r='17' fill='%23ffd23f'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%2317140f'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Martian+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts load without holding up the first paint: the page shows at once and the fonts swap in when ready. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Martian+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" onload="this.onload = null; this.rel = 'stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Martian+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" /></noscript>
     <title>Babel Beats — guess the song in any language</title>
+    <!-- Shown the moment the page arrives, while the game's scripts download; the game replaces it when it starts. -->
+    <style>
+      html { background: #efe6d2; }
+      body { margin: 0; }
+      .boot {
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 22px;
+        min-height: 100vh;
+        min-height: 100dvh;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 24px 16px;
+        color: #17140f;
+        font-family: 'Martian Mono', ui-monospace, Menlo, Consolas, monospace;
+        text-align: center;
+      }
+      .boot__record {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: repeating-radial-gradient(circle, #1b1812 0 1.5px, #2b261d 1.5px 3px);
+        box-shadow: 0 0 0 3px #17140f, 6px 7px 0 rgba(23, 20, 15, 0.16);
+        animation: boot-spin 2.4s linear infinite;
+      }
+      .boot__record::after {
+        content: '';
+        position: absolute;
+        inset: 34%;
+        border: 3px solid #17140f;
+        border-radius: 50%;
+        background: #ffd23f;
+      }
+      .boot__name {
+        margin: 0;
+        font: 400 2.4rem / 1 'Dela Gothic One', 'Arial Black', Impact, sans-serif;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+      }
+      .boot__note {
+        margin: 0;
+        font-size: 0.75rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #5a5246;
+      }
+      @keyframes boot-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .boot__record { animation: none; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot" role="status">
+        <div class="boot__record" aria-hidden="true"></div>
+        <p class="boot__name">Babel Beats</p>
+        <p class="boot__note">Loading the game…</p>
+        <noscript><p class="boot__note">Babel Beats needs JavaScript switched on.</p></noscript>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

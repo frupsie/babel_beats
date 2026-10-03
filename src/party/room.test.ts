@@ -200,6 +200,31 @@ describe('a round', () => {
     expect(player(a).round.status).toBe('lost');
   });
 
+  it('lets a player give up, keeping their tries, and ends the round when everyone is done', () => {
+    const { room, join, state, player, answer } = setup();
+    const a = join('a', 'Ann');
+    const b = join('b', 'Ben');
+    room.handle(a, { t: 'start' });
+    startListening(room, [a, b]);
+    room.handle(a, { t: 'skip', no: 1 });
+    room.handle(a, { t: 'giveUp', no: 1 });
+    expect(player(a).round).toMatchObject({ status: 'lost', tries: ['skip'], points: 0 });
+    room.handle(a, { t: 'guess', no: 1, songId: answer(), text: '' }); // too late now
+    expect(player(a).round.status).toBe('lost');
+    expect(state().phase).toBe('playing'); // Ben is still guessing
+    room.handle(b, { t: 'giveUp', no: 1 });
+    expect(state().phase).toBe('reveal');
+  });
+
+  it('ignores giving up during the countdown', () => {
+    const { room, join, player } = setup();
+    const a = join('a', 'Ann');
+    room.handle(a, { t: 'start' });
+    room.handle(a, { t: 'loaded', no: 1 });
+    room.handle(a, { t: 'giveUp', no: 1 });
+    expect(player(a).round.status).toBe('playing');
+  });
+
   it('ends early once everyone is done, then moves on by itself after the reveal', () => {
     const { room, join, state, answer } = setup();
     const a = join('a', 'Ann');

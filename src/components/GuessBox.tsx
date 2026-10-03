@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { SG_STYLE, fmtSeconds, langStyle, songHtmlLang } from '../lib/format';
 import { searchSongs, type IndexedSong } from '../lib/match';
 import type { Song } from '../types';
@@ -11,10 +11,26 @@ interface Props {
   /** Returns false when the guess was not accepted (nothing usable was chosen). */
   onGuess: (song: Song | null, typed: string) => boolean;
   onSkip: () => void;
+  /** Ends the round at once and shows the answer. Offered while there are tries left to skip through. */
+  onGiveUp?: () => void;
+}
+
+/** Phones are too narrow for the full placeholder; it moves into a hint line under the box there. */
+const NARROW = '(max-width: 520px)';
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(() => typeof matchMedia !== 'undefined' && matchMedia(NARROW).matches);
+  useEffect(() => {
+    const mq = matchMedia(NARROW);
+    const update = () => setNarrow(mq.matches);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return narrow;
 }
 
 /** Autocomplete over the whole catalogue (every language), so the list never hints at the answer's language. */
-export function GuessBox({ index, disabled, skipGain, onGuess, onSkip }: Props) {
+export function GuessBox({ index, disabled, skipGain, onGuess, onSkip, onGiveUp }: Props) {
+  const narrow = useNarrow();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -94,7 +110,7 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip }: Props) 
           autoCapitalize="off"
           spellCheck={false}
           enterKeyHint="go"
-          placeholder="Name that track…  (title, artist, romaji, pinyin)"
+          placeholder={narrow ? 'Song or artist…' : 'Name that track…  (title, artist, romaji, pinyin)'}
           value={query}
           disabled={disabled}
           onChange={(e) => {
@@ -148,6 +164,8 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip }: Props) 
       )}
       </div>
 
+      {narrow && <p className="guess__hint">Type a title or artist: English, romaji or pinyin all work.</p>}
+
       {nudge && (
         <p className="guess__nudge" role="alert">
           {nudge}
@@ -162,6 +180,12 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip }: Props) 
           Guess
         </button>
       </div>
+      {/* On the last try, Skip already means giving up. */}
+      {onGiveUp && skipGain !== null && (
+        <button type="button" className="linkish guess__giveup" onClick={onGiveUp} disabled={disabled}>
+          Don’t know it? Give up
+        </button>
+      )}
     </div>
   );
 }

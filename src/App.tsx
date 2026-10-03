@@ -12,11 +12,13 @@ import { VolumeControl } from './components/VolumeControl';
 import { engine } from './lib/engine';
 import { cx, fmtSeconds, formatChartDate, langStyle } from './lib/format';
 import {
+  AUTOPLAY_AFTER_SKIP_MS,
   DIFFICULTIES,
   ERAS,
   FULL_PREVIEW_SECONDS,
   applyGuess,
   currentClip,
+  giveUp,
   ladderFor,
   newRound,
   poolFor,
@@ -84,6 +86,8 @@ export default function App() {
   const [round, setRound] = useState<RoundState | null>(null);
   const [art, setArt] = useState<string | null>(null);
   const [playing, setPlaying] = useState<{ id: number; seconds: number } | null>(null);
+  /** How much of the next song has downloaded (0–1) while a round loads. */
+  const [loadProgress, setLoadProgress] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
   // "Play with friends": a party room instead of the solo game. A shared room link (?room=CODE) opens it directly.
   const [mode, setMode] = useState<'solo' | 'party'>(() => (roomFromUrl() ? 'party' : 'solo'));
@@ -93,6 +97,8 @@ export default function App() {
   const loadTokenRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const playIdRef = useRef(0);
+  /** The longer clip waiting to play after a skip; any other action cancels it. */
+  const autoplayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsDialogRef = useRef<HTMLDialogElement>(null);
 
   // Songs per language in the list being played; a language with none can't be switched on.
@@ -106,6 +112,18 @@ export default function App() {
     [settings],
   );
 
+  // ---------------------------------------------------------------- playback
+  const cancelAutoplay = () => {
+    if (autoplayRef.current) clearTimeout(autoplayRef.current);
+    autoplayRef.current = null;
+  };
+
+  const playClip = useCallback((buffer: AudioBuffer, seconds: number) => {
+    const id = ++playIdRef.current;
+    setPlaying({ id, seconds: Math.min(seconds, buffer.duration) });
+    engine.play(buffer, seconds, () => setPlaying((p) => (p?.id === id ? null : p)));
+  }, []);
+
   // ---------------------------------------------------------------- rounds
   const startRound = useCallback(async (s: Settings) => {
     const token = ++loadTokenRef.current;
@@ -113,9 +131,12 @@ export default function App() {
     const abort = new AbortController();
     abortRef.current = abort;
 
+    if (autoplayRef.current) clearTimeout(autoplayRef.current);
+    autoplayRef.current = null;
     engine.stop();
     setPlaying(null);
     setPhase('loading');
+    setLoadProgress(0);
     setRound(null);
     setArt(null);
     bufferRef.current = null;
@@ -129,12 +150,20 @@ export default function App() {
       playedRef.current.add(song.id);
       try {
         const track = await resolveTrack(song, abort.signal);
-        const buffer = await engine.load(track.previewUrl, abort.signal);
+        if (token === loadTokenRef.current) setLoadProgress(0.1);
+        const buffer = await engine.load(track.previewUrl, abort.signal, (done) => {
+          if (token === loadTokenRef.current) setLoadProgress(0.1 + 0.9 * done);
+        });
         if (token !== loadTokenRef.current) return;
         bufferRef.current = buffer;
         setArt(track.artworkUrl);
-        setRound(newRound(song, ladderFor(s.difficulty), s.pool));
+        const fresh = newRound(song, ladderFor(s.difficulty), s.pool);
+        setRound(fresh);
         setPhase('ready');
+        setLoadProgress(null);
+        // Once the song is ready, its first clip plays by itself, unless the visitor hasn't clicked or tapped yet
+        // (browsers block sound until then; the status line says "Tap to play").
+        if (engine.ready) playClip(buffer, currentClip(fresh));
         return;
       } catch (err) {
         if (token !== loadTokenRef.current || abort.signal.aborted) return;
@@ -142,7 +171,7 @@ export default function App() {
       }
     }
     if (token === loadTokenRef.current) setPhase('error');
-  }, []);
+  }, [playClip]);
 
   // A new round starts on mount and whenever the list, language, difficulty or era changes.
   useEffect(() => {
@@ -162,24 +191,22 @@ export default function App() {
   useEffect(
     () => () => {
       abortRef.current?.abort();
+      if (autoplayRef.current) clearTimeout(autoplayRef.current);
       engine.stop();
     },
     [],
   );
 
-  // ---------------------------------------------------------------- playback
   const togglePlay = () => {
     const buffer = bufferRef.current;
     if (!round || !buffer) return;
+    cancelAutoplay();
     if (playing) {
       engine.stop();
       setPlaying(null);
       return;
     }
-    const seconds = round.status === 'playing' ? currentClip(round) : FULL_PREVIEW_SECONDS;
-    const id = ++playIdRef.current;
-    setPlaying({ id, seconds: Math.min(seconds, buffer.duration) });
-    engine.play(buffer, seconds, () => setPlaying((p) => (p?.id === id ? null : p)));
+    playClip(buffer, round.status === 'playing' ? currentClip(round) : FULL_PREVIEW_SECONDS);
   };
 
   // ---------------------------------------------------------------- guessing
@@ -192,11 +219,22 @@ export default function App() {
   };
 
   const commit = (current: RoundState, entry: GuessEntry) => {
+    cancelAutoplay();
     engine.stop();
     setPlaying(null);
     const next = applyGuess(current, entry);
     setRound(next);
     conclude(next);
+
+    // A skip is a request to hear more: the longer clip follows by itself after a short pause, which leaves time to
+    // skip again or give up instead.
+    const buffer = bufferRef.current;
+    if (entry.kind === 'skip' && next.status === 'playing' && buffer) {
+      autoplayRef.current = setTimeout(() => {
+        autoplayRef.current = null;
+        playClip(buffer, currentClip(next));
+      }, AUTOPLAY_AFTER_SKIP_MS);
+    }
 
     const left = next.ladder.length - next.guesses.length;
     if (next.status === 'won') setAnnouncement('Correct!');
@@ -218,6 +256,17 @@ export default function App() {
 
   const skip = () => {
     if (round?.status === 'playing') commit(round, { kind: 'skip' });
+  };
+
+  const giveUpRound = () => {
+    if (round?.status !== 'playing') return;
+    cancelAutoplay();
+    engine.stop();
+    setPlaying(null);
+    const next = giveUp(round);
+    setRound(next);
+    conclude(next);
+    setAnnouncement(`Given up. It was ${next.song.title} by ${next.song.artist}.`);
   };
 
   // ---------------------------------------------------------------- settings
@@ -352,10 +401,13 @@ export default function App() {
                 disabled={sgMode}
               />
 
+              <h2 className="kicker howto__title">
+                <span className="kicker__n">?</span>How to play
+              </h2>
               <ol className="howto">
-                <li>Press the record. You only get a sliver.</li>
-                <li>Guess, or skip to unlock more of the song.</li>
-                <li>Six tries. Fewer tries, bigger stamp.</li>
+                <li>Tap the record to hear a short clip of a song.</li>
+                <li>Type a guess and pick the song from the list, or skip to hear a longer clip.</li>
+                <li>You have six tries. The fewer you need, the better your result.</li>
               </ol>
             </div>
           </section>
@@ -406,11 +458,20 @@ export default function App() {
                   art={finished ? art : null}
                   disabled={phase !== 'ready'}
                   onToggle={togglePlay}
+                  progress={loadProgress}
                 />
 
                 <div className="deck">
                   <p className="tries" aria-hidden="true">
-                    {round && !finished ? `Try ${round.guesses.length + 1} of ${round.ladder.length}` : finished ? 'Round over' : 'Tuning in…'}
+                    {phase === 'loading'
+                      ? 'Loading the song…'
+                      : round && !finished
+                        ? round.guesses.length === 0 && !playing && !engine.ready
+                          ? 'Tap to play'
+                          : `Try ${round.guesses.length + 1} of ${round.ladder.length}`
+                        : finished
+                          ? 'Round over'
+                          : ''}
                   </p>
                   <VolumeControl prefs={audio} onChange={setAudio} />
                 </div>
@@ -462,6 +523,7 @@ export default function App() {
                       skipGain={round ? skipGain(round) : null}
                       onGuess={guess}
                       onSkip={skip}
+                      onGiveUp={giveUpRound}
                     />
                   </>
                 )}

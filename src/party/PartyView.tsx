@@ -12,7 +12,17 @@ import { Vinyl } from '../components/Vinyl';
 import { VolumeControl } from '../components/VolumeControl';
 import { engine } from '../lib/engine';
 import { cx, fmtSeconds, formatChartDate } from '../lib/format';
-import { DIFFICULTIES, ERAS, FULL_PREVIEW_SECONDS, currentClip, poolFor, skipGain, type GuessEntry, type RoundState } from '../lib/game';
+import {
+  AUTOPLAY_AFTER_SKIP_MS,
+  DIFFICULTIES,
+  ERAS,
+  FULL_PREVIEW_SECONDS,
+  currentClip,
+  poolFor,
+  skipGain,
+  type GuessEntry,
+  type RoundState,
+} from '../lib/game';
 import { resolveTrack } from '../lib/itunes';
 import { isCorrectTitle } from '../lib/match';
 import { poolSongs } from '../lib/pools';
@@ -414,6 +424,7 @@ function PartyRound({
 
   // Download each round's preview as soon as the song is known.
   const [failedSongId, setFailedSongId] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ songId: string; done: number } | null>(null);
   useEffect(() => {
     if (!song) {
       setFailedSongId(round.songId); // our copy of the song lists doesn't have it (an out-of-date page)
@@ -422,8 +433,11 @@ function PartyRound({
     const abort = new AbortController();
     (async () => {
       try {
+        setProgress({ songId: song.id, done: 0 });
         const track = await resolveTrack(song, abort.signal);
-        const buf = await engine.load(track.previewUrl, abort.signal);
+        const buf = await engine.load(track.previewUrl, abort.signal, (done) => {
+          if (!abort.signal.aborted) setProgress({ songId: song.id, done: 0.1 + 0.9 * done });
+        });
         if (!abort.signal.aborted) setLoaded({ songId: song.id, buffer: buf, art: track.artworkUrl });
       } catch {
         if (!abort.signal.aborted) setFailedSongId(song.id);
@@ -487,9 +501,22 @@ function PartyRound({
     // Deliberately not re-run for every new `view` object: only when the round, its start time or the preview changes.
   }, [state.phase, round.goAt, round.no, round.songId, buffer, me.round.status]);
 
-  // A new attempt (wrong or skip) or the end of the round cuts the clip off, as in solo play.
+  // A new attempt (wrong or skip) or the end of the round cuts the clip off, as in solo play. After a skip, the longer
+  // clip follows by itself after a short pause, which leaves time to skip again or give up instead.
   const triesCount = me.round.tries.length;
-  useEffect(stop, [triesCount, state.phase, round.no]);
+  const lastTry = me.round.tries[triesCount - 1];
+  const seenTriesRef = useRef({ no: round.no, count: triesCount });
+  useEffect(() => {
+    stop();
+    const seen = seenTriesRef.current;
+    const newTry = seen.no === round.no && triesCount > seen.count;
+    seenTriesRef.current = { no: round.no, count: triesCount };
+    if (!newTry || lastTry !== 'skip' || myStatus !== 'playing' || state.phase !== 'playing' || !view) return;
+    const seconds = currentClip(view);
+    const t = setTimeout(() => play(seconds), AUTOPLAY_AFTER_SKIP_MS);
+    return () => clearTimeout(t);
+    // Only a new attempt, a new round or the end of the round should cut in here.
+  }, [triesCount, state.phase, round.no]);
   useEffect(() => () => engine.stop(), []);
 
   const guess = (picked: Song | null, typed: string): boolean => {
@@ -521,7 +548,9 @@ function PartyRound({
             : me.round.status === 'won'
               ? `Got it! +${me.round.points}. Waiting for the others…`
               : me.round.status === 'lost'
-                ? 'Out of tries. Waiting for the others…'
+                ? triesCount < round.ladder.length
+                  ? 'You gave up. Waiting for the others…'
+                  : 'Out of tries. Waiting for the others…'
                 : `Try ${triesCount + 1} of ${round.ladder.length}`;
 
   return (
@@ -554,6 +583,7 @@ function PartyRound({
         art={revealed ? (loaded?.art ?? song?.artworkUrl ?? null) : null}
         disabled={!buffer || counting || (me.round.status === 'out' && !revealed)}
         onToggle={togglePlay}
+        progress={progress?.songId === round.songId ? progress.done : 0}
       />
 
       <div className="deck">
@@ -581,6 +611,9 @@ function PartyRound({
           onGuess={guess}
           onSkip={() => {
             if (canGuess) send({ t: 'skip', no: round.no });
+          }}
+          onGiveUp={() => {
+            if (canGuess) send({ t: 'giveUp', no: round.no });
           }}
         />
       )}
