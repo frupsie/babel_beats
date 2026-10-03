@@ -7,7 +7,9 @@ const STATS_KEY = 'babel-beats:stats:v1';
 // Volume is stored apart from the game settings on purpose: changing a setting starts a new round, moving the slider must not.
 const AUDIO_KEY = 'babel-beats:audio:v1';
 
-const DIFFICULTY_IDS: Difficulty[] = ['easy', 'medium', 'hard', 'expert', 'impossible'];
+const DIFFICULTY_IDS: Difficulty[] = ['easy', 'medium', 'hard', 'impossible'];
+/** A level that used to exist (between Hard and Impossible); a saved one becomes Hard. */
+const RETIRED_DIFFICULTIES = ['expert'];
 const ERA_IDS: Era[] = ['any', 'classic', '2000s', '2010s', '2020s'];
 
 const POOL_IDS: Pool[] = ['mix', 'mine', 'sg-now'];
@@ -37,7 +39,11 @@ export function loadSettings(): Settings {
   const langs = Array.isArray(raw.langs) ? raw.langs.filter(isLangCode) : [];
   return {
     langs: langs.length > 0 ? LANG_CODES.filter((c) => langs.includes(c)) : DEFAULT_SETTINGS.langs,
-    difficulty: DIFFICULTY_IDS.includes(raw.difficulty as Difficulty) ? (raw.difficulty as Difficulty) : DEFAULT_SETTINGS.difficulty,
+    difficulty: DIFFICULTY_IDS.includes(raw.difficulty as Difficulty)
+      ? (raw.difficulty as Difficulty)
+      : RETIRED_DIFFICULTIES.includes(raw.difficulty as string)
+        ? 'hard'
+        : DEFAULT_SETTINGS.difficulty,
     era: ERA_IDS.includes(raw.era as Era) ? (raw.era as Era) : DEFAULT_SETTINGS.era,
     // Settings saved before this list existed have no `pool`; they keep playing the language mix.
     pool: POOL_IDS.includes(raw.pool as Pool) ? (raw.pool as Pool) : DEFAULT_SETTINGS.pool,

@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { LANGUAGES } from '../data/languages';
-import { langStyle } from '../lib/format';
+import { langStyle, startHere } from '../lib/format';
 import type { Stats } from '../types';
 
 interface Props {
@@ -23,7 +23,7 @@ export function StatsDialog({ dialogRef, stats, onReset }: Props) {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="sheet__inner">
+      <div className="sheet__inner" tabIndex={-1} ref={startHere}>
         <h2 id="stats-title" className="sheet__title">
           Your record
         </h2>
@@ -81,7 +81,7 @@ export function StatsDialog({ dialogRef, stats, onReset }: Props) {
           >
             Reset
           </button>
-          <button type="button" className="btn btn--primary" onClick={close} autoFocus>
+          <button type="button" className="btn btn--primary" onClick={close}>
             Close
           </button>
         </div>

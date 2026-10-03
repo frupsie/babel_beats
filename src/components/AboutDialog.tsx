@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { startHere } from '../lib/format';
 
 interface Props {
   dialogRef: RefObject<HTMLDialogElement | null>;
@@ -18,7 +19,7 @@ export function AboutDialog({ dialogRef }: Props) {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="sheet__inner">
+      <div className="sheet__inner" tabIndex={-1} ref={startHere}>
         <h2 id="about-title" className="sheet__title">
           How to play
         </h2>
@@ -49,7 +50,7 @@ export function AboutDialog({ dialogRef }: Props) {
         </ul>
 
         <div className="sheet__actions sheet__actions--end">
-          <button type="button" className="btn btn--primary" onClick={close} autoFocus>
+          <button type="button" className="btn btn--primary" onClick={close}>
             Close
           </button>
         </div>

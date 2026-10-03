@@ -6,8 +6,11 @@ import type { Difficulty, Era, LangCode, Pool } from '../types.ts';
 
 export const MAX_PLAYERS = 12;
 export const NAME_MAX = 20;
-export const ROUND_CHOICES = [5, 10, 15] as const;
-export const SECONDS_CHOICES = [30, 60, 90] as const;
+/** The number of songs in a game is a slider, from ROUNDS_MIN to ROUNDS_MAX one song at a time. */
+export const ROUNDS_MIN = 5;
+export const ROUNDS_MAX = 30;
+/** Every song gets the same time limit; the faster a right answer, the more it scores (see pointsFor). */
+export const ROUND_SECONDS = 60;
 /** How long players get to download the round's preview before the round starts without the slow ones. */
 export const LOAD_TIMEOUT_MS = 8_000;
 /** The 3-2-1 before a round, so everyone starts listening together. */
@@ -23,8 +26,6 @@ export interface PartySettings {
   era: Era;
   difficulty: Difficulty;
   rounds: number;
-  /** Time limit per round. */
-  seconds: number;
 }
 
 export const DEFAULT_PARTY_SETTINGS: PartySettings = {
@@ -33,7 +34,6 @@ export const DEFAULT_PARTY_SETTINGS: PartySettings = {
   era: 'any',
   difficulty: 'medium',
   rounds: 10,
-  seconds: 60,
 };
 
 export type Phase = 'lobby' | 'loading' | 'playing' | 'reveal' | 'final';
@@ -142,6 +142,11 @@ export function cleanName(value: unknown): string {
 
 const POOLS: readonly Pool[] = ['mix', 'mine', 'sg-now'];
 
+/** A number of songs the slider can produce. */
+export function isRounds(v: unknown): v is number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= ROUNDS_MIN && v <= ROUNDS_MAX;
+}
+
 /** Valid settings, or null. */
 export function cleanSettings(value: unknown): PartySettings | null {
   if (typeof value !== 'object' || value === null) return null;
@@ -152,8 +157,7 @@ export function cleanSettings(value: unknown): PartySettings | null {
     langs.length > 0 &&
     ERAS.some((e) => e.id === v.era) &&
     DIFFICULTIES.some((d) => d.id === v.difficulty) &&
-    (ROUND_CHOICES as readonly unknown[]).includes(v.rounds) &&
-    (SECONDS_CHOICES as readonly unknown[]).includes(v.seconds);
+    isRounds(v.rounds);
   if (!ok) return null;
   return {
     pool: v.pool as Pool,
@@ -161,7 +165,6 @@ export function cleanSettings(value: unknown): PartySettings | null {
     era: v.era as Era,
     difficulty: v.difficulty as Difficulty,
     rounds: v.rounds as number,
-    seconds: v.seconds as number,
   };
 }
 

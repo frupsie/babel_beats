@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_PARTY_SETTINGS,
   NAME_MAX,
+  ROUNDS_MAX,
+  ROUNDS_MIN,
   cleanName,
   cleanSettings,
   isRoomCode,
@@ -68,10 +70,24 @@ describe('cleanSettings', () => {
     expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, langs: ['zh', 'zh', 'xx'] })?.langs).toEqual(['zh']);
   });
 
-  it('rejects settings with no language, an unknown list or an odd time limit', () => {
+  it('rejects settings with no language or an unknown list', () => {
     expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, langs: [] })).toBeNull();
     expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, pool: 'spotify' })).toBeNull();
-    expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, seconds: 5 })).toBeNull();
+  });
+
+  it('accepts any number of songs the slider can make and nothing else', () => {
+    for (const rounds of [ROUNDS_MIN, 7, 10, 23, ROUNDS_MAX]) {
+      expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, rounds })?.rounds).toBe(rounds);
+    }
+    // below the range, above it, not a whole number, not a number
+    for (const rounds of [ROUNDS_MIN - 1, 0, ROUNDS_MAX + 1, 1000, 10.5, NaN, '10', null]) {
+      expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, rounds })).toBeNull();
+    }
+  });
+
+  it('accepts the Impossible difficulty', () => {
+    expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, difficulty: 'impossible' })?.difficulty).toBe('impossible');
+    expect(cleanSettings({ ...DEFAULT_PARTY_SETTINGS, difficulty: 'expert' })).toBeNull();
   });
 });
 

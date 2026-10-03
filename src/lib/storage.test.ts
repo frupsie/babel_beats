@@ -1,5 +1,25 @@
-import { describe, expect, it } from 'vitest';
-import { emptyStats, recordResult } from './storage';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { emptyStats, loadSettings, recordResult } from './storage';
+
+describe('loadSettings', () => {
+  const withSaved = (value: unknown) =>
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify(value), setItem: () => {} });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('turns the retired Expert level into Hard', () => {
+    withSaved({ difficulty: 'expert' });
+    expect(loadSettings().difficulty).toBe('hard');
+  });
+
+  it('keeps a current difficulty and falls back to medium for nonsense', () => {
+    for (const difficulty of ['easy', 'hard', 'impossible']) {
+      withSaved({ difficulty });
+      expect(loadSettings().difficulty).toBe(difficulty);
+    }
+    withSaved({ difficulty: 'nightmare' });
+    expect(loadSettings().difficulty).toBe('medium');
+  });
+});
 
 describe('recordResult', () => {
   it('counts a curated song toward its language, the totals and the streak', () => {

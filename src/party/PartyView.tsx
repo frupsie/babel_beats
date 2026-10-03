@@ -1,11 +1,12 @@
 // "Play with friends": live rooms where everyone hears the same song at the same moment and races to name it.
 // The server (server/party.ts) runs the game; this view shows it, plays the clips and sends guesses.
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type MutableRefObject } from 'react';
 import { LANGUAGES, LANG_CODES, type LangCode } from '../data/languages';
 import { GuessBox } from '../components/GuessBox';
 import { Ladder } from '../components/Ladder';
 import { LanguagePicker } from '../components/LanguagePicker';
 import { PoolSwitch } from '../components/PoolSwitch';
+import { RangeField } from '../components/RangeField';
 import { Reveal } from '../components/Reveal';
 import { Segmented } from '../components/Segmented';
 import { Vinyl } from '../components/Vinyl';
@@ -26,14 +27,16 @@ import {
 import { resolveTrack } from '../lib/itunes';
 import { isCorrectTitle } from '../lib/match';
 import { poolSongs } from '../lib/pools';
+import { VOICE } from '../lib/voice';
 import { INDEX, POOLS, SG_SNAPSHOT, songById } from '../lib/songData';
 import type { AudioPrefs } from '../lib/volume';
 import type { Settings, Song } from '../types';
 import {
   CODE_LENGTH,
+  DEFAULT_PARTY_SETTINGS,
   NAME_MAX,
-  ROUND_CHOICES,
-  SECONDS_CHOICES,
+  ROUNDS_MAX,
+  ROUNDS_MIN,
   cleanName,
   isRoomCode,
   normaliseCode,
@@ -49,9 +52,11 @@ interface Props {
   audio: AudioPrefs;
   onAudioChange: (prefs: AudioPrefs) => void;
   onExit: () => void;
+  /** Filled in while this view is open, so the page's title can take the player home the same way "Leave" does. */
+  leaveRef: MutableRefObject<(() => void) | null>;
 }
 
-export function PartyView({ soloSettings, audio, onAudioChange, onExit }: Props) {
+export function PartyView({ soloSettings, audio, onAudioChange, onExit, leaveRef }: Props) {
   const party = useParty();
   const { state, you } = party;
   const me = state?.players.find((p) => p.id === you) ?? null;
@@ -61,6 +66,17 @@ export function PartyView({ soloSettings, audio, onAudioChange, onExit }: Props)
     party.leave();
     onExit();
   };
+
+  // From the page's title: with a room open, ask first (a stray tap shouldn't drop someone from a game).
+  useEffect(() => {
+    leaveRef.current = () => {
+      if (state && !window.confirm('Leave this room and go back to the home page?')) return;
+      exit();
+    };
+    return () => {
+      leaveRef.current = null;
+    };
+  });
 
   if (!state || !me) return <PartyEntry party={party} soloSettings={soloSettings} onBack={exit} />;
 
@@ -91,6 +107,12 @@ function PartyEntry({ party, soloSettings, onBack }: { party: Party; soloSetting
   const [code, setCode] = useState(() => normaliseCode(roomFromUrl() ?? ''));
   const cleaned = cleanName(name);
   const busy = party.connection === 'connecting';
+  // Each problem shows next to what caused it: a wrong or full room under the room code, "too many rooms" under the host
+  // button. Anything else (a dropped connection, joining from another tab) is general.
+  const err = party.error;
+  const codeError = err?.code === 'no-room' || err?.code === 'full' ? err : null;
+  const hostError = err?.code === 'busy' ? err : null;
+  const generalError = err && !codeError && !hostError ? err : null;
 
   // A reload in the middle of a game: go straight back into the room as the same player.
   const { join: rejoin } = party;
@@ -104,7 +126,7 @@ function PartyEntry({ party, soloSettings, onBack }: { party: Party; soloSetting
     e.preventDefault();
     if (!cleaned) return;
     engine.unlock(); // this click lets the first clip of each round play by itself later
-    party.create(cleaned, { ...soloSettings, rounds: 10, seconds: 60 });
+    party.create(cleaned, { ...soloSettings, rounds: DEFAULT_PARTY_SETTINGS.rounds });
   };
   const join = (e: FormEvent) => {
     e.preventDefault();
@@ -134,9 +156,9 @@ function PartyEntry({ party, soloSettings, onBack }: { party: Party; soloSetting
           />
         </label>
 
-        {party.error && (
+        {generalError && (
           <p className="party__error" role="alert">
-            {party.error.message}
+            {generalError.message}
           </p>
         )}
 
@@ -149,6 +171,11 @@ function PartyEntry({ party, soloSettings, onBack }: { party: Party; soloSetting
             <button type="submit" className="btn btn--primary" disabled={!cleaned || busy}>
               {busy ? 'Opening…' : 'Start a room'}
             </button>
+            {hostError && (
+              <p className="party__error" role="alert">
+                {hostError.message}
+              </p>
+            )}
           </form>
 
           <form onSubmit={join} className="party-entry__half">
@@ -165,9 +192,19 @@ function PartyEntry({ party, soloSettings, onBack }: { party: Party; soloSetting
                 autoComplete="off"
                 spellCheck={false}
                 placeholder="e.g. K7P3"
-                onChange={(e) => setCode(normaliseCode(e.target.value))}
+                aria-invalid={codeError ? true : undefined}
+                aria-describedby={codeError ? 'code-error' : undefined}
+                onChange={(e) => {
+                  setCode(normaliseCode(e.target.value));
+                  if (codeError) party.clearError();
+                }}
               />
             </label>
+            {codeError && (
+              <p id="code-error" className="party__error party__error--field" role="alert">
+                {codeError.message}
+              </p>
+            )}
             <button type="submit" className="btn" disabled={!cleaned || !isRoomCode(code) || busy}>
               Join room
             </button>
@@ -327,21 +364,15 @@ function Lobby({ state, me, party }: { state: RoomState; me: PublicPlayer; party
         onChange={(era) => update({ era })}
         disabled={s.pool === 'sg-now'}
       />
-      <Segmented
-        name="party-rounds"
+      <RangeField
         number="3"
         legend="Songs"
-        value={String(s.rounds)}
-        options={ROUND_CHOICES.map((n) => ({ id: String(n), label: String(n) }))}
-        onChange={(v) => update({ rounds: Number(v) })}
-      />
-      <Segmented
-        name="party-seconds"
-        number="4"
-        legend="Time per song"
-        value={String(s.seconds)}
-        options={SECONDS_CHOICES.map((n) => ({ id: String(n), label: `${n}s` }))}
-        onChange={(v) => update({ seconds: Number(v) })}
+        value={s.rounds}
+        min={ROUNDS_MIN}
+        max={ROUNDS_MAX}
+        step={1}
+        format={String}
+        onChange={(rounds) => update({ rounds })}
       />
       <button
         type="button"
@@ -366,7 +397,7 @@ function SettingsSummary({ settings: s, eligible }: { settings: PartySettings; e
   return (
     <ul className="party-summary">
       <li>
-        <b>{s.rounds}</b> songs, <b>{s.seconds}s</b> each
+        <b>{s.rounds}</b> songs
       </li>
       <li>
         {list} · {langs}
@@ -535,18 +566,18 @@ function PartyRound({
   const status =
     state.phase === 'loading'
       ? me.round.status === 'waiting'
-        ? 'Loading the song…'
+        ? VOICE.loadingSong
         : me.round.status === 'out'
           ? 'You’ll join from the next song.'
           : 'Waiting for the others to load…'
       : counting
-        ? 'Get ready…'
+        ? VOICE.getReady
         : revealed
           ? 'Round over'
           : me.round.status === 'out'
             ? 'You’re sitting this song out. You’re in from the next one.'
             : me.round.status === 'won'
-              ? `Got it! +${me.round.points}. Waiting for the others…`
+              ? VOICE.gotIt(me.round.points)
               : me.round.status === 'lost'
                 ? triesCount < round.ladder.length
                   ? 'You gave up. Waiting for the others…'
@@ -575,48 +606,52 @@ function PartyRound({
         </div>
       )}
 
-      <Vinyl
-        loading={!buffer}
-        playing={playing}
-        label={!buffer ? 'Tuning' : revealed ? `${FULL_PREVIEW_SECONDS}s` : fmtSeconds(clip)}
-        ariaLabel={playing ? 'Stop' : revealed ? 'Play the 30 second preview' : `Play a ${fmtSeconds(clip)} clip`}
-        art={revealed ? (loaded?.art ?? song?.artworkUrl ?? null) : null}
-        disabled={!buffer || counting || (me.round.status === 'out' && !revealed)}
-        onToggle={togglePlay}
-        progress={progress?.songId === round.songId ? progress.done : 0}
-      />
+      <div className="play">
+        <Vinyl
+          loading={!buffer}
+          playing={playing}
+          label={!buffer ? 'Tuning' : revealed ? `${FULL_PREVIEW_SECONDS}s` : fmtSeconds(clip)}
+          ariaLabel={playing ? 'Stop' : revealed ? 'Play the 30 second preview' : `Play a ${fmtSeconds(clip)} clip`}
+          art={revealed ? (loaded?.art ?? song?.artworkUrl ?? null) : null}
+          disabled={!buffer || counting || (me.round.status === 'out' && !revealed)}
+          onToggle={togglePlay}
+          progress={progress?.songId === round.songId ? progress.done : 0}
+        />
+        <div className="play__side">
 
-      <div className="deck">
-        <p className="tries">{status}</p>
-        <VolumeControl prefs={audio} onChange={onAudioChange} />
+        <div className="deck">
+          <p className="tries">{status}</p>
+          <VolumeControl prefs={audio} onChange={onAudioChange} />
+        </div>
+
+        {view && <Ladder round={view} />}
+
+        {revealed && view ? (
+          <Reveal
+            round={view}
+            art={loaded?.art ?? null}
+            rank={state.settings.pool === 'sg-now' ? POOLS.sg.rank.get(view.song.id) : undefined}
+            playingFull={playing !== null}
+            onPlayFull={togglePlay}
+            onNext={me.host ? () => party.send({ t: 'next' }) : undefined}
+            nextNote={nextIn !== null ? (round.no < round.total ? `Next song in ${nextIn}s` : `Final scores in ${nextIn}s`) : undefined}
+          />
+        ) : (
+          <GuessBox
+            index={INDEX}
+            disabled={!canGuess}
+            skipGain={view ? skipGain(view) : null}
+            onGuess={guess}
+            onSkip={() => {
+              if (canGuess) send({ t: 'skip', no: round.no });
+            }}
+            onGiveUp={() => {
+              if (canGuess) send({ t: 'giveUp', no: round.no });
+            }}
+          />
+        )}
+        </div>
       </div>
-
-      {view && <Ladder round={view} />}
-
-      {revealed && view ? (
-        <Reveal
-          round={view}
-          art={loaded?.art ?? null}
-          rank={state.settings.pool === 'sg-now' ? POOLS.sg.rank.get(view.song.id) : undefined}
-          playingFull={playing !== null}
-          onPlayFull={togglePlay}
-          onNext={me.host ? () => party.send({ t: 'next' }) : undefined}
-          nextNote={nextIn !== null ? (round.no < round.total ? `Next song in ${nextIn}s` : `Final scores in ${nextIn}s`) : undefined}
-        />
-      ) : (
-        <GuessBox
-          index={INDEX}
-          disabled={!canGuess}
-          skipGain={view ? skipGain(view) : null}
-          onGuess={guess}
-          onSkip={() => {
-            if (canGuess) send({ t: 'skip', no: round.no });
-          }}
-          onGiveUp={() => {
-            if (canGuess) send({ t: 'giveUp', no: round.no });
-          }}
-        />
-      )}
     </div>
   );
 }
@@ -634,11 +669,11 @@ function Final({ state, me, party }: { state: RoomState; me: PublicPlayer; party
       <p className="party-round__no">Final scores</p>
       <h2 className="party__title">
         {winners.length === 0
-          ? 'Nobody scored this time'
+          ? VOICE.nobodyScored
           : winners.some((w) => w.id === me.id)
             ? winners.length > 1
               ? 'You tied for first!'
-              : 'You win!'
+              : VOICE.youWin
             : `${winners.map((w) => w.name).join(' & ')} ${winners.length > 1 ? 'tie' : 'wins'}!`}
       </h2>
       <ol className="podium">

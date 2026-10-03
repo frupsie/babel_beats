@@ -2,7 +2,7 @@ import type { LangCode } from './data/languages';
 
 export type { LangCode };
 export type Era = 'any' | 'classic' | '2000s' | '2010s' | '2020s';
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert' | 'impossible';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'impossible';
 /** Where songs come from: the curated language catalogue, your own Spotify playlists, or this week's Singapore chart. */
 export type Pool = 'mix' | 'mine' | 'sg-now';
 

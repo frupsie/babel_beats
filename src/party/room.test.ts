@@ -1,7 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildPools } from '../lib/pools';
 import type { Song } from '../types';
-import { COUNTDOWN_MS, DEFAULT_PARTY_SETTINGS, LOAD_TIMEOUT_MS, REVEAL_MS, type RoomState, type ServerMsg } from './protocol';
+import {
+  COUNTDOWN_MS,
+  DEFAULT_PARTY_SETTINGS,
+  LOAD_TIMEOUT_MS,
+  REVEAL_MS,
+  ROUND_SECONDS,
+  type RoomState,
+  type ServerMsg,
+} from './protocol';
 import { HOST_GRACE_MS, Room } from './room';
 
 const song = (id: string, title: string, lang: Song['lang'] = 'en'): Song => ({
@@ -23,7 +31,7 @@ const CATALOG = [song('1', 'Alpha'), song('2', 'Bravo'), song('3', 'Charlie'), s
 const pools = buildPools(CATALOG, { lists: [] }, null);
 
 /** A room plus a record of what each player was last sent. */
-function setup(settings = { ...DEFAULT_PARTY_SETTINGS, rounds: 2, seconds: 30 }) {
+function setup(settings = { ...DEFAULT_PARTY_SETTINGS, rounds: 2 }) {
   const last = new Map<string, RoomState>();
   const sent: ServerMsg[] = [];
   const room = new Room({
@@ -98,7 +106,7 @@ describe('host', () => {
     const { room, join, state } = setup();
     join('a', 'Ann');
     const b = join('b', 'Ben');
-    room.handle(b, { t: 'settings', settings: { ...DEFAULT_PARTY_SETTINGS, difficulty: 'expert' } });
+    room.handle(b, { t: 'settings', settings: { ...DEFAULT_PARTY_SETTINGS, difficulty: 'hard' } });
     room.handle(b, { t: 'start' });
     expect(state()).toMatchObject({ phase: 'lobby', settings: { difficulty: 'medium' } });
   });
@@ -138,7 +146,7 @@ describe('a round', () => {
     room.handle(b, { t: 'loaded', no: 1 });
     expect(state().phase).toBe('playing');
     expect(state().round!.goAt).toBe(Date.now() + COUNTDOWN_MS);
-    expect(state().round!.deadline).toBe(Date.now() + COUNTDOWN_MS + 30_000);
+    expect(state().round!.deadline).toBe(Date.now() + COUNTDOWN_MS + ROUND_SECONDS * 1000);
   });
 
   it('starts without a player who is too slow to download, who then sits the round out', () => {
@@ -169,7 +177,7 @@ describe('a round', () => {
     startListening(room, [a, b]);
     room.handle(a, { t: 'guess', no: 1, songId: answer(), text: '' }); // first try, instantly: full 1000
     room.handle(b, { t: 'skip', no: 1 });
-    vi.advanceTimersByTime(15_000); // half the time gone: half the speed bonus lost
+    vi.advanceTimersByTime((ROUND_SECONDS * 1000) / 2); // half the time gone: half the speed bonus lost
     room.handle(b, { t: 'guess', no: 1, songId: answer(), text: '' });
     expect(player(a).round).toMatchObject({ status: 'won', tries: ['right'], points: 1000, ms: 0 });
     expect(player(b).round).toMatchObject({ status: 'won', tries: ['skip', 'right'], points: 638 }); // 850 × 0.75
@@ -241,7 +249,7 @@ describe('a round', () => {
     const a = join('a', 'Ann');
     room.handle(a, { t: 'start' });
     startListening(room, [a]);
-    vi.advanceTimersByTime(30_000);
+    vi.advanceTimersByTime(ROUND_SECONDS * 1000);
     expect(state().phase).toBe('reveal');
     expect(player(a).round.status).toBe('lost');
   });
@@ -260,7 +268,7 @@ describe('a round', () => {
   });
 
   it('does not repeat a song within a session', () => {
-    const { room, join, state, answer } = setup({ ...DEFAULT_PARTY_SETTINGS, langs: ['en'], rounds: 3, seconds: 30 });
+    const { room, join, state, answer } = setup({ ...DEFAULT_PARTY_SETTINGS, langs: ['en'], rounds: 3 });
     const a = join('a', 'Ann');
     room.handle(a, { t: 'start' });
     const heard: string[] = [];
@@ -297,7 +305,7 @@ describe('a round', () => {
   });
 
   it('says so when no song matches the settings', () => {
-    const { room, join, state } = setup({ ...DEFAULT_PARTY_SETTINGS, langs: ['ja'], rounds: 5, seconds: 30 });
+    const { room, join, state } = setup({ ...DEFAULT_PARTY_SETTINGS, langs: ['ja'], rounds: 5 });
     const a = join('a', 'Ann');
     room.handle(a, { t: 'start' });
     expect(state().phase).toBe('lobby');

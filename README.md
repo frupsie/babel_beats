@@ -30,6 +30,7 @@ npm start          # the production server: dist/ plus party rooms, on PORT (def
 | Round rules, difficulty ladders, era filter, song picking | `src/lib/game.ts` |
 | Autocomplete and answer checking (native script, romaji, pinyin, English gloss) | `src/lib/match.ts`, `src/lib/text.ts` |
 | Web Audio clip player | `src/lib/audio.ts` |
+| The game's Singlish lines (answer stamps, "Aiyo, miss!", loading text); edit or tone down here | `src/lib/voice.ts` (the loading screen's copy is also in `index.html`) |
 | "Popular" list (this week's Singapore chart): downloads Apple's chart and writes the snapshot | `scripts/snapshot-sg.mjs` → `src/data/sg-now.json` |
 | "My playlists": your Spotify playlists as text, and the script that finds each song on Apple | `scripts/playlists/*.txt` → `scripts/build-playlists.mjs` → `src/data/playlists.json` |
 | The rules for "is this Apple hit really that Spotify song?" (tested) | `scripts/lib/playlist-match.mjs` |
@@ -66,13 +67,15 @@ for a few kanji titles that Apple's English-language stores don't romanise.
 
 ## Play with friends
 
-**Play with friends** (top right) opens a live room. The host picks the list, languages, era, difficulty, number of songs
-(5, 10 or 15) and time per song (30, 60 or 90 s), and shares the room code (four letters and digits, e.g. K7P3) or invite link
-(`…/?room=K7P3`). Up to 12 players.
+**Play with friends** (top right) opens a live room. The host picks the list, languages, era, difficulty (Easy, Medium, Hard or
+Impossible, as in solo play) and number of songs (a slider, 5 to 30), and shares the
+room code (four letters and digits, e.g. K7P3; a wrong or full code is reported under the code field) or invite link
+(`…/?room=K7P3`). Up to 12 players. The **Babel Beats** title is a button back to the
+home page; inside a room it asks first, then leaves the room.
 
 - **A round:** everyone's phone or computer downloads the song's preview, then a 3-2-1 countdown and the first clip plays
   for everyone at the same moment. Each player then plays like solo: replay the clip, guess, or skip for a longer one.
-  The round ends when everyone is done or the time runs out, the answer shows for 12 seconds (the host can skip ahead),
+  The round ends when everyone is done or the 60 seconds are up, the answer shows for 12 seconds (the host can skip ahead),
   and after the last song come the final scores.
 - **Points:** 1000 for the first try, 850, 700, 550, 400, 250 for later tries, minus up to half for taking longer. A
   miss scores 0.

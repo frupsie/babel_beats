@@ -95,6 +95,8 @@ export interface Party {
   join: (name: string, code: string) => void;
   send: (msg: ClientMsg) => void;
   leave: () => void;
+  /** Hides the current error, e.g. once the player starts correcting what caused it. */
+  clearError: () => void;
 }
 
 export function useParty(): Party {
@@ -229,6 +231,7 @@ export function useParty(): Party {
   );
 
   const serverNow = useCallback(() => Date.now() + (offsetRef.current ?? 0), []);
+  const clearError = useCallback(() => setError(null), []);
 
-  return { connection, state, you, error, serverNow, create, join, send, leave };
+  return { connection, state, you, error, serverNow, create, join, send, leave, clearError };
 }

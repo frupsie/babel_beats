@@ -59,6 +59,13 @@ describe('difficulty ladders', () => {
     }
   });
 
+  it('come in four levels, each starting with a shorter clip than the one before', () => {
+    expect(DIFFICULTIES.map((d) => d.id)).toEqual(['easy', 'medium', 'hard', 'impossible']);
+    DIFFICULTIES.forEach((d, i) => {
+      if (i > 0) expect(d.ladder[0]).toBeLessThan(DIFFICULTIES[i - 1]!.ladder[0]!);
+    });
+  });
+
   it('impossible starts at a tenth of a second', () => {
     expect(ladderFor('impossible')[0]).toBe(0.1);
   });

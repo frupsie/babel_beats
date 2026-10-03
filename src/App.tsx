@@ -10,6 +10,7 @@ import { Segmented } from './components/Segmented';
 import { StatsDialog } from './components/StatsDialog';
 import { Vinyl } from './components/Vinyl';
 import { VolumeControl } from './components/VolumeControl';
+import { VOICE } from './lib/voice';
 import { engine } from './lib/engine';
 import { cx, fmtSeconds, formatChartDate, langStyle } from './lib/format';
 import {
@@ -109,6 +110,8 @@ export default function App() {
   const autoplayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsDialogRef = useRef<HTMLDialogElement>(null);
   const aboutDialogRef = useRef<HTMLDialogElement>(null);
+  /** Set by the party view while it is open: leaves the room (after asking, if in one) and returns to solo play. */
+  const leavePartyRef = useRef<(() => void) | null>(null);
 
   // Songs per language in the list being played; a language with none can't be switched on.
   const counts = useMemo(() => {
@@ -293,6 +296,17 @@ export default function App() {
       return { ...s, pool, langs: s.langs.some((code) => have.includes(code)) ? s.langs : have };
     });
 
+  /** The title is the way home: out of a party room back to the solo game, or back to the top of the page. */
+  const goHome = () => {
+    if (mode === 'party') {
+      if (leavePartyRef.current) leavePartyRef.current();
+      else setMode('solo');
+      return;
+    }
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: calm ? 'auto' : 'smooth' });
+  };
+
   // ---------------------------------------------------------------- derived view state
   const sgMode = settings.pool === 'sg-now';
   const finished = round !== null && round.status !== 'playing';
@@ -319,13 +333,15 @@ export default function App() {
             <i aria-hidden="true">/</i>
             <span lang="ja">イントロクイズ</span>
           </p>
-          <h1 className="wordmark" aria-label="Babel Beats">
-            <span className="wordmark__line" data-text="Babel" aria-hidden="true">
-              Babel
-            </span>
-            <span className="wordmark__line wordmark__line--b" data-text="Beats" aria-hidden="true">
-              Beats
-            </span>
+          <h1 className="wordmark">
+            <button type="button" className="wordmark__home" aria-label="Babel Beats, back to the home page" onClick={goHome}>
+              <span className="wordmark__line" data-text="Babel" aria-hidden="true">
+                Babel
+              </span>
+              <span className="wordmark__line wordmark__line--b" data-text="Beats" aria-hidden="true">
+                Beats
+              </span>
+            </button>
           </h1>
         </div>
         <div className="masthead__side">
@@ -352,7 +368,7 @@ export default function App() {
       </header>
 
       {mode === 'party' ? (
-        <PartyView soloSettings={settings} audio={audio} onAudioChange={setAudio} onExit={() => setMode('solo')} />
+        <PartyView soloSettings={settings} audio={audio} onAudioChange={setAudio} onExit={() => setMode('solo')} leaveRef={leavePartyRef} />
       ) : (
         <main className="board">
           {/* On phones the two halves of the setup sit either side of the game: languages, game, then the rest. */}
@@ -431,7 +447,7 @@ export default function App() {
 
             {phase === 'empty' && !sgMode && (
               <div className="notice">
-                <h2>Nothing to play here</h2>
+                <h2>{VOICE.nothingToPlay}</h2>
                 <p>
                   There are no {ERAS.find((e) => e.id === settings.era)?.label} songs in the languages you picked. Try another era or switch on
                   more languages.
@@ -444,7 +460,7 @@ export default function App() {
 
             {phase === 'error' && (
               <div className="notice">
-                <h2>Couldn’t load a preview</h2>
+                <h2>{VOICE.previewFailed}</h2>
                 <p>Song previews come from Apple’s servers. Check your connection and try again.</p>
                 <button type="button" className="btn btn--primary" onClick={() => void startRound(settings)}>
                   Try again
@@ -453,7 +469,7 @@ export default function App() {
             )}
 
             {(phase === 'loading' || phase === 'ready') && (
-              <>
+              <div className="play">
                 <Vinyl
                   loading={phase === 'loading'}
                   playing={playing}
@@ -464,74 +480,76 @@ export default function App() {
                   onToggle={togglePlay}
                   progress={loadProgress}
                 />
+                <div className="play__side">
 
-                <div className="deck">
-                  <p className="tries" aria-hidden="true">
-                    {phase === 'loading'
-                      ? 'Loading the song…'
-                      : round && !finished
-                        ? round.guesses.length === 0 && !heard
-                          ? 'Tap to play'
-                          : triesLeft(round.ladder.length - round.guesses.length)
-                        : finished
-                          ? 'Round over'
-                          : ''}
-                  </p>
-                  <VolumeControl prefs={audio} onChange={setAudio} />
-                </div>
+                  <div className="deck">
+                    <p className="tries" aria-hidden="true">
+                      {phase === 'loading'
+                        ? VOICE.loadingSong
+                        : round && !finished
+                          ? round.guesses.length === 0 && !heard
+                            ? 'Tap to play'
+                            : triesLeft(round.ladder.length - round.guesses.length)
+                          : finished
+                            ? 'Round over'
+                            : ''}
+                    </p>
+                    <VolumeControl prefs={audio} onChange={setAudio} />
+                  </div>
 
-                {round ? (
-                  <Ladder round={round} />
-                ) : (
-                  <ol className="ladder is-skeleton" aria-hidden="true">
-                    {ladder.map((n, i) => (
-                      <li key={i} className="ladder__cell is-future">
-                        <span className="ladder__time">{fmtSeconds(n)}</span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
+                  {round ? (
+                    <Ladder round={round} />
+                  ) : (
+                    <ol className="ladder is-skeleton" aria-hidden="true">
+                      {ladder.map((n, i) => (
+                        <li key={i} className="ladder__cell is-future">
+                          <span className="ladder__time">{fmtSeconds(n)}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
 
-                {finished && round ? (
-                  <Reveal
-                    round={round}
-                    art={art}
-                    rank={round.pool === 'sg-now' ? SG.rank.get(round.song.id) : undefined}
-                    playingFull={playing !== null}
-                    onPlayFull={togglePlay}
-                    onNext={() => void startRound(settings, true)}
-                  />
-                ) : (
-                  <>
-                    {showHint && round && (
-                      <div className="hint" style={langStyle(round.song.lang)}>
-                        {round.hint ? (
-                          <p>
-                            Hint: it’s a{' '}
-                            <span className="tag">
-                              <span lang={languageInfo(round.song.lang).htmlLang}>{languageInfo(round.song.lang).glyph}</span>{' '}
-                              {languageInfo(round.song.lang).name}
-                            </span>{' '}
-                            song.
-                          </p>
-                        ) : (
-                          <button type="button" className="linkish" onClick={() => setRound({ ...round, hint: true })}>
-                            Stuck? Reveal the language
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    <GuessBox
-                      index={INDEX}
-                      disabled={phase !== 'ready' || !round}
-                      skipGain={round ? skipGain(round) : null}
-                      onGuess={guess}
-                      onSkip={skip}
-                      onGiveUp={giveUpRound}
+                  {finished && round ? (
+                    <Reveal
+                      round={round}
+                      art={art}
+                      rank={round.pool === 'sg-now' ? SG.rank.get(round.song.id) : undefined}
+                      playingFull={playing !== null}
+                      onPlayFull={togglePlay}
+                      onNext={() => void startRound(settings, true)}
                     />
-                  </>
-                )}
-              </>
+                  ) : (
+                    <>
+                      {showHint && round && (
+                        <div className="hint" style={langStyle(round.song.lang)}>
+                          {round.hint ? (
+                            <p>
+                              Hint: it’s a{' '}
+                              <span className="tag">
+                                <span lang={languageInfo(round.song.lang).htmlLang}>{languageInfo(round.song.lang).glyph}</span>{' '}
+                                {languageInfo(round.song.lang).name}
+                              </span>{' '}
+                              song.
+                            </p>
+                          ) : (
+                            <button type="button" className="linkish" onClick={() => setRound({ ...round, hint: true })}>
+                              Stuck? Reveal the language
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <GuessBox
+                        index={INDEX}
+                        disabled={phase !== 'ready' || !round}
+                        skipGain={round ? skipGain(round) : null}
+                        onGuess={guess}
+                        onSkip={skip}
+                        onGiveUp={giveUpRound}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </section>
         </main>

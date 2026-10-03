@@ -1,6 +1,7 @@
 import { languageInfo } from '../data/languages';
 import { SG_STYLE, cx, langStyle, songHtmlLang } from '../lib/format';
 import type { RoundState } from '../lib/game';
+import { VOICE } from '../lib/voice';
 
 interface Props {
   round: RoundState;
@@ -16,10 +17,10 @@ interface Props {
 }
 
 function stampText(round: RoundState): string {
-  if (round.status === 'lost') return 'Missed it';
+  if (round.status === 'lost') return VOICE.stamp.missed;
   const tries = round.guesses.length;
-  if (tries === 1) return 'First listen!';
-  return tries <= 3 ? 'Nailed it' : 'Got it';
+  if (tries === 1) return VOICE.stamp.first;
+  return tries <= 3 ? VOICE.stamp.quick : VOICE.stamp.slow;
 }
 
 /** Shown after the round ends: the answer, its cover, and a rubber-stamp verdict. */

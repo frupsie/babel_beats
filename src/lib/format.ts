@@ -30,3 +30,12 @@ export function formatChartDate(iso: string): string {
 export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
+
+/**
+ * Ref for the content of a `<dialog>` opened with showModal(). The browser puts focus on the element marked `autofocus`
+ * and otherwise on the first button, which would be drawn with a focus ring the moment the sheet opens. (React's own
+ * `autoFocus` doesn't help: it focuses when the page loads, while the dialog is still closed.)
+ */
+export function startHere(el: HTMLElement | null): void {
+  el?.setAttribute('autofocus', '');
+}

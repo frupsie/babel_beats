@@ -9,7 +9,6 @@ export const DIFFICULTIES: ReadonlyArray<{ id: Difficulty; label: string; ladder
   { id: 'easy', label: 'Easy', ladder: [3, 5, 8, 12, 18, 30] },
   { id: 'medium', label: 'Medium', ladder: [1.5, 3, 5, 8, 12, 20] },
   { id: 'hard', label: 'Hard', ladder: [1, 2, 3, 5, 8, 12] },
-  { id: 'expert', label: 'Expert', ladder: [0.5, 1, 2, 3, 5, 8] },
   { id: 'impossible', label: 'Impossible', ladder: [0.1, 0.25, 0.5, 1, 2, 4] },
 ];
 

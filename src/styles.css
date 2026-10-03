@@ -113,6 +113,10 @@ button {
   outline: 3px solid var(--blue);
   outline-offset: 3px;
 }
+/* No grey flash over a button when it is tapped: they all have their own pressed look. */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
 
 .sr-only {
   position: absolute;
@@ -196,12 +200,34 @@ button {
 .wordmark__line--b::before {
   color: var(--blue);
 }
+/* The title is also the way back to the home page: a button that looks like the lettering. */
+.wordmark__home {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: translate 0.12s;
+}
+.wordmark__home:hover {
+  translate: 0 -2px;
+}
+.wordmark__home:active {
+  translate: 0 1px;
+}
 
 .board {
   display: grid;
   gap: 34px;
 }
-@media (min-width: 900px) {
+/* The two-column desktop layout needs room both ways: a window that is wide but short (a phone on its side) gets the
+   single column below instead. */
+@media (min-width: 900px) and (min-height: 521px) {
   .board {
     grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
     gap: 48px;
@@ -652,7 +678,7 @@ button {
 }
 
 /* Phones: the setup dissolves so its two halves can sit either side of the game card. */
-@media (max-width: 899px) {
+@media (max-width: 899px), (max-height: 520px) {
   .setup {
     display: contents;
   }
@@ -676,6 +702,13 @@ button {
     justify-content: flex-start;
     padding-top: 0;
   }
+}
+
+/* .play holds the record and, beside or below it, everything you act on (.play__side). It adds no box of its own until a
+   phone is turned on its side (see the end of this file). */
+.play,
+.play__side {
+  display: contents;
 }
 
 .vinyl {
@@ -1249,6 +1282,10 @@ button {
 .sheet__inner {
   padding: 24px 22px 20px;
 }
+/* The sheet itself takes focus when it opens (see startHere), so no button starts out ringed. */
+.sheet__inner:focus {
+  outline: none;
+}
 .sheet__title {
   margin: 0 0 18px;
   font: 400 1.7rem / 1 var(--f-display);
@@ -1339,6 +1376,42 @@ button {
 .party__start {
   width: 100%;
   margin-top: 22px;
+}
+.party__error--field {
+  margin: -6px 0 12px;
+}
+.field__input[aria-invalid='true'] {
+  border-color: var(--alert);
+}
+
+/* time per song: the volume slider's look, with its value in the heading and the two ends underneath */
+.range {
+  margin-top: 18px;
+}
+.range__value {
+  padding: 2px 9px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--yellow);
+  letter-spacing: 0.04em;
+}
+/* (.range prefix: the phone rule that narrows the volume slider comes later in this file and would otherwise win) */
+.range .range__input {
+  --thumb: 24px;
+  display: block;
+  flex: none;
+  width: 100%;
+  max-width: none;
+  margin-top: 2px;
+}
+.range__ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  font: 500 0.62rem var(--f-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 /* entry: name, then host or join side by side */
@@ -1514,7 +1587,7 @@ button {
 
 /* Phones: the room panel's two parts sit around the game. In a round the game comes first, then the scores, then the
    room code; in the lobby and at the end, the code (to share) comes first. */
-@media (max-width: 899px) {
+@media (max-width: 899px), (max-height: 520px) {
   .party .room-card {
     order: 1;
   }
@@ -1645,7 +1718,7 @@ button {
   min-width: 0;
   margin-right: 8px;
 }
-@media (max-width: 899px) {
+@media (max-width: 899px), (max-height: 520px) {
   .pool,
   .room-card {
     min-width: 0;
@@ -1660,6 +1733,98 @@ button {
 /* The stats sheet is centred by the browser; nudge it by half its shadow so it looks centred too. */
 .sheet {
   translate: -4px 0;
+}
+
+/* ------------------------------------------------------------------ phones turned sideways */
+
+/* The screen is only ~350 px tall, and a record 320 px high would push the guess box off it. So the record goes on the
+   left and the rest of the game (tries, volume, attempts, guess box or answer) on the right: no scrolling to type a
+   guess. The title shrinks so the game starts higher up. */
+@media (max-height: 520px) and (min-width: 560px) {
+  .masthead {
+    margin-bottom: 18px;
+  }
+  .wordmark {
+    font-size: clamp(2.6rem, 8vw, 3.6rem);
+  }
+  .play {
+    --disc: clamp(168px, calc(100dvh - 124px), 300px);
+    display: grid;
+    grid-template-columns: var(--disc) minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: center;
+  }
+  /* a party round also shows the song number and the clock above the record */
+  .party-round .play {
+    --disc: clamp(168px, calc(100dvh - 176px), 300px);
+  }
+  .play > .vinyl {
+    width: var(--disc);
+    margin: 0;
+  }
+  .play__side {
+    display: block;
+    min-width: 0;
+  }
+  .play__side > .deck:first-child {
+    margin-top: 0;
+  }
+  /* every pixel of height counts here */
+  .stage {
+    padding: 22px 20px 16px;
+  }
+  .play .guess__actions {
+    margin-top: 12px;
+  }
+  .play .guess__giveup {
+    margin-top: 10px;
+  }
+  /* The verdict stamp would land on the volume control up in the right-hand corner; it goes over the record instead. */
+  .stage .result-stamp {
+    top: 22px;
+    right: auto;
+    left: 18px;
+  }
+  /* the answer: a smaller cover and buttons, so it fits beside the record without scrolling */
+  .play .reveal__main {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .play .reveal__art {
+    width: 84px;
+    height: 84px;
+  }
+  .play .reveal__title,
+  .play .reveal__title:lang(en) {
+    font-size: 1.3rem;
+  }
+  .play .reveal__meta {
+    margin-bottom: 4px;
+  }
+  .play .reveal__actions {
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .play .reveal__actions .btn {
+    padding: 9px 13px;
+    font-size: 0.72rem;
+  }
+}
+/* the smallest phones on their side: a shorter volume slider keeps "Tap to play" on one line, and the screen is too
+   short to spare a line for the typing hint (the placeholder says the same) */
+@media (max-height: 520px) and (min-width: 560px) and (max-width: 700px) {
+  .play .volume__slider {
+    flex-basis: 84px;
+    width: 84px;
+  }
+  .play .volume__value {
+    display: none;
+  }
+}
+@media (max-height: 360px) and (min-width: 560px) {
+  .play .guess__hint {
+    display: none;
+  }
 }
 
 /* ------------------------------------------------------------------ motion */

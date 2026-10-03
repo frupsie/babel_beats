@@ -11,6 +11,7 @@ import {
   LOAD_TIMEOUT_MS,
   MAX_PLAYERS,
   REVEAL_MS,
+  ROUND_SECONDS,
   pointsFor,
   type ClientMsg,
   type PartySettings,
@@ -280,7 +281,7 @@ export class Room {
       return;
     }
     round.goAt = this.now() + COUNTDOWN_MS;
-    round.deadline = round.goAt + this.settings.seconds * 1000;
+    round.deadline = round.goAt + ROUND_SECONDS * 1000;
     this.phase = 'playing';
     this.schedule(round.deadline - this.now(), () => this.endRound());
     this.broadcast();

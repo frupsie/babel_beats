@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { SG_STYLE, fmtSeconds, langStyle, songHtmlLang } from '../lib/format';
 import { searchSongs, type IndexedSong } from '../lib/match';
+import { VOICE } from '../lib/voice';
 import type { Song } from '../types';
 
 interface Props {
@@ -15,8 +16,11 @@ interface Props {
   onGiveUp?: () => void;
 }
 
-/** Phones are too narrow for the full placeholder; it moves into a hint line under the box there. */
-const NARROW = '(max-width: 520px)';
+/**
+ * Phones are too narrow for the full placeholder; it moves into a hint line under the box there. Turned on its side, a
+ * phone shares its width with the record, so the box is just as narrow until the screen is about 820 px wide.
+ */
+const NARROW = '(max-width: 520px), (max-height: 520px) and (max-width: 820px)';
 function useNarrow(): boolean {
   const [narrow, setNarrow] = useState(() => typeof matchMedia !== 'undefined' && matchMedia(NARROW).matches);
   useEffect(() => {
@@ -183,7 +187,7 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip, onGiveUp 
       {/* On the last try, Skip already means giving up. */}
       {onGiveUp && skipGain !== null && (
         <button type="button" className="linkish guess__giveup" onClick={onGiveUp} disabled={disabled}>
-          Don’t know it? Give up
+          {VOICE.giveUp}
         </button>
       )}
     </div>

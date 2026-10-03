@@ -70,7 +70,7 @@ describe('party server', () => {
   it('runs a room: create, join by code, play a round over real WebSockets', async () => {
     const { url, party } = await startServer();
     const ann = await connect(url);
-    ann.send({ t: 'create', secret: secret('ann'), name: 'Ann', settings: { ...DEFAULT_PARTY_SETTINGS, rounds: 5, seconds: 30 } });
+    ann.send({ t: 'create', secret: secret('ann'), name: 'Ann', settings: { ...DEFAULT_PARTY_SETTINGS, rounds: 5 } });
     const created = await ann.untilState((s) => s.players.length === 1);
     expect(created.code).toMatch(/^(?=.*[A-Z])(?=.*[2-9])[A-HJKMNP-Z2-9]{4}$/);
     expect(party.roomCount()).toBe(1);
