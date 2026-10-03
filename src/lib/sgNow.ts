@@ -62,14 +62,14 @@ function releaseYear(date?: string): number {
   return Number.isFinite(y) && y > 1900 ? y : new Date().getFullYear();
 }
 
-/** Is this chart item the same recording as a curated catalogue song? Same title spelling and a matching artist. */
+/** Is this chart item the same recording as a All Time catalogue song? Same title spelling and a matching artist. */
 function sameSong(item: FeedItem, c: Song): boolean {
   return matchesSong({ id: String(item.id), titles: [item.name], artists: [item.artistName] }, c);
 }
 
 /**
  * Turns the chart feed plus the lookup results into playable entries. Songs with no preview are dropped, but
- * every entry keeps its real chart position. A song that is already in the curated catalogue is flagged so the
+ * every entry keeps its real chart position. A song that is already in the All Time catalogue is flagged so the
  * game can use the catalogue's own copy (that keeps "is this guess right?" a simple id comparison).
  */
 export function buildSgEntries(

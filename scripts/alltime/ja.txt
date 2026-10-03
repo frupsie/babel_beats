@@ -1,0 +1,145 @@
+# name: All Time (Japanese)
+# lang: ja
+# Built by scripts/alltime/make-lists.mjs on 2026-10-03 from: all-time stream totals on Spotify's Japan daily chart (kworb.net) alternating with Japan's all-time best-selling singles (Oricon, via Wikipedia)
+# Left out: a Korean, Western or other non-Japanese act, a repeat under another title, or a listing without a real artist. Order: as merged from the sources (best first).
+# One song per line: title|artists
+点描の唄|Mrs. GREEN APPLE
+Soba ni Iru ne|Thelma Aoyama, SoulJa
+青と夏|Mrs. GREEN APPLE
+Flavor of Life|Hikaru Utada
+怪獣の花唄|Vaundy
+Kiseki|Greeeen
+水平線|back number
+Lovers Again|Exile
+ドライフラワー|Yuuri
+Shunkashūtō|Hilcrhyme
+ダンスホール|Mrs. GREEN APPLE
+Junrenka|Shōnan no Kaze
+ライラック|Mrs. GREEN APPLE
+Butterfly|Kaela Kimura
+ケセラセラ|Mrs. GREEN APPLE
+Ai Uta|Greeeen
+Pretender|OFFICIAL HIGE DANDISM
+Maru Maru Mori Mori!|Mana Ashida and Fuku Suzukias Kaoru to Tomoki, Tamani Mook
+Soranji|Mrs. GREEN APPLE
+Tsubomi|Kobukuro
+高嶺の花子さん|back number
+Story|Ai
+夜に駆ける|YOASOBI
+Haruka|Greeeen
+115万キロのフィルム|OFFICIAL HIGE DANDISM
+Aitakute Aitakute|Kana Nishino
+ただ君に晴れ|Yorushika
+366 Nichi|HY
+花束|back number
+Ashita ga Kurunara|Juju, Jay'ed
+マリーゴールド|Aimyon
+Oyoge! Taiyaki-kun|Masato Shimon
+群青|YOASOBI
+Mata Kimi ni Koishiteru|Fuyumi Sakamoto
+インフェルノ|Mrs. GREEN APPLE
+Winding Road|Ayaka and Kobukuro
+きらり|Fujii Kaze
+Mata Aimashō|Seamo
+W / X / Y|Tani Yuuki
+Dreamland|Bennie K
+なんでもないよ、|Macaroni Empitsu
+Hana|Orange Range
+僕のこと|Mrs. GREEN APPLE
+Sakura|Kobukuro
+ベテルギウス|Yuuri
+Love Story|Namie Amuro
+Subtitle|OFFICIAL HIGE DANDISM
+Lemon|Kenshi Yonezu
+シンデレラボーイ|Saucy Dog
+Life|Kimaguren
+アイドル|YOASOBI
+Futatsu no Kuchibiru|Exile
+I LOVE...|OFFICIAL HIGE DANDISM
+Kimi ga Iru Dake de|Kome Kome Club
+HAPPY BIRTHDAY|back number
+Gake no Ue no Ponyo|Fujioka Fujimaki and Nozomi Ōhashi
+裸の心|Aimyon
+Konayuki|Remioromen
+Magic|Mrs. GREEN APPLE
+Ti Amo|Exile
+ロマンチシズム|Mrs. GREEN APPLE
+Onna no Michi|Shiro Miya
+君はロックを聴かない|Aimyon
+Age Age Every Knight|DJ OZMA
+Stand by me, Stand by you.|HIRAIDAI
+Sōsei no Aquarion|Akino
+不可幸力|Vaundy
+Mikazuki|Ayaka
+ハッピーエンド|back number
+Tsunami|Southern All Stars
+幾億光年|Omoinotake
+Heavy Rotation|AKB48
+Bling-Bang-Bang-Born|Creepy Nuts
+Sekai ni Hitotsu Dake no Hana|SMAP
+晩餐歌|tuki.
+Suirenka|Shōnan no Kaze
+恋人ごっこ|Macaroni Empitsu
+Kimi no Subete ni|Spontania, Juju
+Mela!|Ryokuoushoku Shakai
+Ring a Ding Dong|Kaela Kimura
+愛とか恋とか|Novelbright
+Happiness|Ai
+Walking with you|Novelbright
+Can You Celebrate?|Namie Amuro
+美しい鰭|SPITZ
+Teacher Teacher|AKB48
+チェリー|SPITZ
+napori|Vaundy
+Zankoku na Tenshi no These|Yoko Takahashi
+怪物|YOASOBI
+Dango 3 Kyodai|Kentarou Hayami, Ayumi Shigemori, Himawari Kids and Dango Gasshoudan
+IRIS OUT|Kenshi Yonezu
+CITRUS|Da-iCE
+Say Yes|Chage and Aska
+怪盗|back number
+Love Story wa Totsuzen ni|Kazumasa Oda
+KICK BACK|Kenshi Yonezu
+Tomorrow Never Knows|Mr. Children
+魔法の絨毯|Takaya Kawasaki
+Kimi ni Utatta Love Song|Lil'B
+Flying Get|AKB48
+ビリミリオン|Yuuri
+Everyday, Katyusha|AKB48
+奏(かなで)|Sukima Switch
+Lovin' Life|Funky Monkey Babys
+白日|King Gnu
+Love Love Love|Dreams Come True
+春愁|Mrs. GREEN APPLE
+Oh! Yeah!|Kazumasa Oda
+踊り子|Vaundy
+Koi Suru Fortune Cookie|AKB48
+ノーダウト|OFFICIAL HIGE DANDISM
+Sakura Zaka|Masaharu Fukuyama
+ハルノヒ|Aimyon
+Koi no Tsubomi|Kumi Koda
+シャッター|Yuuri
+Everything|Misia
+花占い|Vaundy
+Hitomi o Tojite|Ken Hirai
+ワタリドリ|[Alexandros]
+Shuchishin|Shuchishin
+ダーリン|Mrs. GREEN APPLE
+Yasashiku Naritai|Kazuyoshi Saito
+愛を伝えたいだとか|Aimyon
+小さな恋のうた|MONGOL800
+Yah Yah Yah|Chage and Aska
+新時代|Ado
+Tada... Aitakute|Exile
+ROSE|HANA
+Migi Kara Kita Mono Wo Hidari He Ukenagasu No Uta|Moody Katsuyama
+SPECIALZ|King Gnu
+Sunao ni Naretara|Juju
+ブルーベリー・ナイツ|Macaroni Empitsu
+Departures|Globe
+愛をこめて花束を|Superfly
+Ichibu to Zenbu|B'z
+クリスマスソング|back number
+Towa ni Tomo ni|Kobukuro
+恋|back number
+Good-bye Days|Yui for Kaoru Amane

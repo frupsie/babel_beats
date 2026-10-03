@@ -23,8 +23,9 @@ npm start          # the production server: dist/ plus party rooms, on PORT (def
 
 | Piece | Where |
 | --- | --- |
-| Song lists you curate, one file per language | `scripts/seeds/<lang>.json` |
-| Script that resolves those lists against iTunes and writes the playable catalogue | `scripts/build-catalog.mjs` → `src/data/catalog.json` |
+| "All Time" source lists from public all-time charts, and the script that builds them | `scripts/alltime/<lang>.txt` ← `scripts/alltime/make-lists.mjs` |
+| Script that finds those songs on Apple and writes the All Time catalogue | `scripts/build-alltime.mjs` → `src/data/catalog.json` |
+| Shared "search Apple and verify each song" step (All Time and playlists) | `scripts/lib/resolve-list.mjs` |
 | Language registry (name, glyph, ink colour) | `src/data/languages.ts` |
 | Round rules, difficulty ladders, era filter, song picking | `src/lib/game.ts` |
 | Autocomplete and answer checking (native script, romaji, pinyin, English gloss) | `src/lib/match.ts`, `src/lib/text.ts` |
@@ -38,9 +39,30 @@ npm start          # the production server: dist/ plus party rooms, on PORT (def
 | Party rooms: messages and validation, the room rules (tested), the screens | `src/party/protocol.ts`, `src/party/room.ts`, `src/party/PartyView.tsx` |
 | Party server (WebSockets at `/party`) and the production server | `server/party.ts`, `server/index.ts` |
 
-The catalogue is generated data, committed so the app works without running the script.
+The catalogue is generated data, committed so the app works without running the scripts.
 At play time the app asks iTunes for a fresh preview URL for the chosen song and falls back to the URL stored in the
 catalogue if that lookup fails.
+
+## All Time
+
+The **All Time** tab plays about 100 of the most popular songs of all time in each language, taken from public all-time
+charts (`npm run alltime:lists` downloads them into `scripts/alltime/<lang>.txt`):
+
+- **English:** Spotify's all-time most-streamed songs (from kworb.net) alternating with Billboard's Greatest of All Time
+  Hot 100, so it mixes streaming-era hits with classics.
+- **Mandarin:** all-time stream totals on Spotify's Taiwan daily chart (kworb.net). Mandopop that isn't on Spotify
+  Taiwan (much of mainland China's streaming happens elsewhere) is under-represented.
+- **Japanese:** all-time stream totals on Spotify's Japan daily chart (kworb.net) alternating with Japan's all-time
+  best-selling singles, physical (Oricon) and digital, from Wikipedia.
+
+Songs in another language (Spanish hits, K-pop, Taiwanese Hokkien), noise tracks, alternate versions and repeats are
+left out; `scripts/alltime/make-lists.mjs` lists each exclusion with its reason. `npm run alltime` then finds every song
+on Apple and verifies it the same way as your playlists (title and artist must both match), keeping the first 100
+verified songs per language; songs Apple can't preview or verify are skipped and the next one down takes their place
+(see `scripts/.cache/alltime-report.txt`). Years are Apple's earliest release date for the recording, so a classic may
+show a later reissue year. Streaming totals favour recent music: Mandarin has no songs from before 2000 and Japanese only a
+few, so those languages have little or nothing under the Classic era filter. `scripts/alltime/readings.json` holds romaji
+for a few kanji titles that Apple's English-language stores don't romanise.
 
 ## Play with friends
 
@@ -123,10 +145,13 @@ just the Chinese playlist, just the Japanese one, or both. English is greyed out
   an alias, so a duet never merges two people. Anything it can't verify is left out rather than guessed. Songs still
   unmatched after the first search get two more tries: the Hong Kong store (Chinese), then a search by the song's second
   artist. `--limit=60` does a quick test run.
-- **Which version:** when Apple has several releases of a song, the one crediting the most of the row's artists (and no
-  strangers, so the solo cut for a solo row) wins, then the earliest release, then the single over an EP or album. DJ, mix,
-  live and concert, unplugged, piano, sped-up or slowed, TV-size and English-language versions are skipped unless the
-  Spotify row is itself one of those.
+- **Which version:** when Apple has several releases of a song, the one crediting the most of the row's artists (a "feat."
+  credit in the title counts) wins, then the plain song over an edit, dub or ballad cut of it ("Radio Edit", "Single Version"
+  and remasters count as the song itself), then the one with no strangers (the solo cut for a solo row), then the earliest
+  release, then the single over an EP or album. DJ, mix, live and concert, unplugged, piano, sped-up or slowed, TV-size,
+  re-recorded, "From THE FIRST TAKE" and English-language versions are skipped unless the row is itself one of those. A song
+  with several famous covers is searched a second time with the artist first, so the original isn't crowded out. The All Time
+  list skips a song Apple has only as an edit; your playlists keep it and list it in the report.
 - **Left out on purpose:** duplicates and re-cuts that Apple wouldn't have anyway (sped-up, DJ, Live, instrumental,
   female-voice covers). The playlist files say how many rows were set aside. A song that is in a playlist twice under two
   titles ("勇者" and "The Brave") counts once.
@@ -134,27 +159,22 @@ just the Chinese playlist, just the Japanese one, or both. English is greyed out
   part of an artist name (worth a glance), and a sample of accepted matches to eyeball. Most misses are songs Apple doesn't
   carry in these stores, or covers by other artists. Some are on Apple under a native-script title only, with no English
   spelling to check a romanised Spotify title against (Spotify's "Kaikai Kitan" is Apple's 廻廻奇譚), so they stay out.
-- **Last run (2026-09-21):** 408 of the Chinese playlist's 456 songs and 489 of the Japanese playlist's 522 are playable, 897
-  in all (54 of them are also in the All Time list and use its entries).
+- **Last run (2026-10-03):** 408 of the Chinese playlist's 456 songs and 490 of the Japanese playlist's 522 are playable, 898
+  in all (79 of them are also in the All Time list and use its entries).
 - **Years are Apple's release dates,** not curated, so the era filter can be off for re-issued songs. A song that is also in
-  the curated catalogue uses the catalogue's entry instead.
+  the All Time list uses that entry instead.
 - **It is rate-limited:** Apple throttles searches (HTTP 429), so the first full run of both playlists takes about 40
   minutes. Every answer is cached in `scripts/.cache`, so re-runs take seconds and only new songs cost anything.
 
 ## Add a language
 
-1. Create `scripts/seeds/<code>.json`, e.g. `ko.json`. Each entry:
-   ```json
-   {"t": "Title", "a": "Artist", "y": 2019, "ta": ["English gloss / romanisation"], "aa": ["Artist in English"]}
-   ```
-   - `t`, `a`, `y`: title and artist as displayed, and the **original release year** (it drives the era filter).
-   - `ta`: extra spellings people may type; the first entries are shown under the title.
-   - `tm`: spellings used only for matching Apple's data (e.g. Apple writes カタカナ where you wrote romaji).
-   - `aa`: extra artist spellings.
-2. Register the language in `scripts/build-catalog.mjs` (`LANGS`, with the iTunes storefronts to try) and in
+1. Write its source list, `scripts/alltime/<code>.txt` (e.g. `ko.txt`): a `# lang: ko` line, a `# name: …` line, then
+   one song per line as `title|artists`, most popular first. (Or add a source for it in `scripts/alltime/make-lists.mjs`.)
+2. Register the language in `scripts/lib/resolve-list.mjs` (`LANGS`: the Apple storefront to search, and stores that
+   spell names in English for verifying), in `LANG_ORDER` in `scripts/build-alltime.mjs`, and in
    `src/data/languages.ts` (name, glyph, `htmlLang`, ink `color` and readable `onColor`).
-3. `npm run catalog`. Songs Apple can't preview are dropped and listed in `scripts/.cache/last-report.txt`.
-   Searches are cached in `scripts/.cache`, so re-runs are fast and only new songs hit the network.
+3. `npm run alltime`, then `npm run playlists`. Songs Apple can't preview or verify are skipped and listed in
+   `scripts/.cache/alltime-report.txt`. Searches are cached in `scripts/.cache`, so re-runs are fast.
 
 Storefront note: Apple's Search API returns **nothing** for the China (`cn`) and Korea (`kr`) storefronts, so Mandarin
 uses Taiwan/Hong Kong (Traditional Chinese) and a Korean list would need a different storefront such as `us` or `jp`
@@ -166,16 +186,15 @@ accepted as guesses.
 ## Notes
 
 - Some artists are simply not previewable on Apple Music (e.g. SMAP, RADWIMPS, Arashi), so they aren't in the lists.
-- Release years are hand-curated. `last-report.txt` flags songs where Apple's date disagrees by two or more years;
-  those are usually compilation dates, not errors.
+- Release years come from Apple (the earliest release of the recording it found), so reissues can show a later year.
 - **Licensing: treat this as a local prototype.** Apple's Search API documentation allows previews and artwork only to
   promote store content, not for entertainment, and requires them to sit next to an Apple store badge. A guessing game
   plays the previews as the entertainment itself, so don't publish it publicly as is. Before doing that, switch to a source
   you're licensed to use or get Apple's permission.
 - **iTunes API limits** (Apple's docs, checked): `limit` is 1–200 per search (default 50); the Search API is capped at
   roughly 20 calls a minute (subject to change; heavier use is meant to go through Apple's partner feed). Lookup accepts
-  many comma-separated IDs in one call (120 tested). `scripts/build-catalog.mjs` paces itself at about one search per
-  1.8 s, caches every result, and backs off on HTTP 403/429.
+  many comma-separated IDs in one call (120 tested). The build scripts pace themselves at about one search per
+  1.3–1.8 s, cache every result, and back off on HTTP 403/429.
 - Volume: a mute button and slider next to the try counter. Dragging with a mouse or finger snaps to 5% steps (the slider
   has ~90px of travel for 101 values, so at 1% some values can't be reached by dragging); the arrow keys move in exact 1%
   steps. The level (a squared curve, so the quiet half stays usable) and mute state are remembered. 100% is the loudest

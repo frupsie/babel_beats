@@ -1,4 +1,4 @@
-// Chinese-text helpers shared by the catalogue builder and the Singapore snapshot script.
+// Chinese-text helpers shared by the build scripts (All Time, playlists, the Singapore chart snapshot).
 // Build-time only: opencc-js and pinyin-pro are far too heavy to ship to the browser.
 import * as OpenCC from 'opencc-js';
 import { pinyin } from 'pinyin-pro';

@@ -1,10 +1,10 @@
-// Helpers shared by every "list of songs" the game can play besides the curated catalogue: this week's Singapore
+// Helpers shared by every "list of songs" the game can play besides the All Time catalogue: this week's Singapore
 // chart and your own playlists. Pure functions; scripts/*.mjs run this file directly under Node, so keep it to
 // erasable TypeScript (no enums or namespaces).
 import type { LangCode, Song } from '../types.ts';
 import { compact, titleKey } from './text.ts';
 
-/** One position in a list. `song` is always complete; `catalogId` marks it as a song already in the curated catalogue. */
+/** One position in a list. `song` is always complete; `catalogId` marks it as a song already in the All Time catalogue. */
 export interface ListEntry {
   rank: number;
   catalogId?: string;
@@ -45,7 +45,7 @@ export interface Candidate {
 }
 
 /**
- * Is this candidate the same recording as a curated catalogue song? Same id, or a matching title spelling
+ * Is this candidate the same recording as a All Time catalogue song? Same id, or a matching title spelling
  * together with a matching artist spelling. Very short artist names must match exactly: "EN" should not match "Ken".
  */
 export function matchesSong(candidate: Candidate, c: Song): boolean {

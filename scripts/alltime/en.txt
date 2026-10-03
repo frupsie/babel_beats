@@ -1,0 +1,145 @@
+# name: All Time (English)
+# lang: en
+# Built by scripts/alltime/make-lists.mjs on 2026-10-03 from: Spotify's all-time most-streamed songs (kworb.net) alternating with Billboard's Greatest of All Time Hot 100
+# Left out: not sung in English, a noise track, or a remix of a song already listed. Order: as merged from the sources (best first).
+# One song per line: title|artists
+Blinding Lights|The Weeknd
+Shape of You|Ed Sheeran
+The Twist|Chubby Checker
+Sweater Weather|The Neighbourhood
+Smooth|Santana, Rob Thomas
+Starboy|The Weeknd
+Mack The Knife|Bobby Darin
+As It Was|Harry Styles
+Uptown Funk!|Mark Ronson, Bruno Mars
+One Dance|Drake
+How Do I Live|LeAnn Rimes
+Sunflower|Post Malone
+Party Rock Anthem|LMFAO, Lauren Bennett, GoonRock
+Someone You Loved|Lewis Capaldi
+I Gotta Feeling|The Black Eyed Peas
+Perfect|Ed Sheeran
+STAY|The Kid LAROI
+Physical|Olivia Newton-John
+I Wanna Be Yours|Arctic Monkeys
+You Light Up My Life|Debby Boone
+Die With A Smile|Lady Gaga
+Hey Jude|The Beatles
+BIRDS OF A FEATHER|Billie Eilish
+Closer|The Chainsmokers, Halsey
+Yellow|Coldplay
+We Belong Together|Mariah Carey
+Believer|Imagine Dragons
+Un-Break My Heart|Toni Braxton
+The Night We Met|Lord Huron
+Yeah!|Usher, Lil Jon, Ludacris
+Heat Waves|Glass Animals
+Bette Davis Eyes|Kim Carnes
+Riptide|Vance Joy
+Circles|Post Malone
+Endless Love|Diana Ross, Lionel Richie
+lovely|Billie Eilish
+Tonight's The Night (Gonna Be Alright)|Rod Stewart
+Something Just Like This|The Chainsmokers
+Foolish Games/You Were Meant For Me|Jewel
+Every Breath You Take|The Police
+(Everything I Do) I Do It For You|Bryan Adams
+Iris|The Goo Goo Dolls
+I'Ll Make Love To You|Boyz II Men
+Another Love|Tom Odell
+The Theme From "A Summer Place"|Percy Faith And His Orchestra
+Say You Won't Let Go|James Arthur
+Le Freak|Chic
+Counting Stars|OneRepublic
+How Deep Is Your Love|Bee Gees
+Take Me To Church|Hozier
+Eye Of The Tiger|Survivor
+Photograph|Ed Sheeran
+We Found Love|Rihanna, Calvin Harris
+Viva La Vida|Coldplay
+Girls Like You|Maroon 5, Cardi B
+Can't Hold Us|Macklemore
+Low|Flo Rida, T-Pain
+Locked out of Heaven|Bruno Mars
+Levitating|Dua Lipa
+Dance Monkey|Tones And I
+I Just Want To Be Your Everything|Andy Gibb
+Mr. Brightside|The Killers
+Too Close|Next
+Just The Way You Are|Bruno Mars
+Cruel Summer|Taylor Swift
+Somebody That I Used To Know|Gotye, Kimbra
+rockstar|Post Malone
+Flashdance...What A Feeling|Irene Cara
+Die For You|The Weeknd
+Rolling In The Deep|Adele
+Señorita|Shawn Mendes
+Tossin' And Turnin'|Bobby Lewis
+That's What I Like|Bruno Mars
+Old Town Road|Lil Nas X, Billy Ray Cyrus
+Watermelon Sugar|Harry Styles
+The Battle Of New Orleans|Johnny Horton
+In the End|Linkin Park
+One Sweet Day|Mariah Carey, Boyz II Men
+Love Yourself|Justin Bieber
+Truly Madly Deeply|Savage Garden
+Don't Start Now|Dua Lipa
+Silly Love Songs|Wings
+When I Was Your Man|Bruno Mars
+Let's Get It On|Marvin Gaye
+Night Fever|Bee Gees
+Bohemian Rhapsody|Queen
+Another One Bites The Dust|Queen
+Billie Jean|Michael Jackson
+Mood|24kGoldn, iann dior
+Without Me|Eminem
+Say Say Say|Paul McCartney And Michael Jackson
+Wake Me Up|Avicii
+How You Remind Me|Nickelback
+Let Me Love You|DJ Snake
+Tie A Yellow Ribbon Round The Ole Oak Tree|Dawn, Tony Orlando
+goosebumps|Travis Scott
+It's All In The Game|Tommy Edwards
+Thinking out Loud|Ed Sheeran
+I Want To Hold Your Hand|The Beatles
+Lucid Dreams|Juice WRLD
+Shadow Dancing|Andy Gibb
+All of Me|John Legend
+Call Me Maybe|Carly Rae Jepsen
+Espresso|Sabrina Carpenter
+Blurred Lines|Robin Thicke, T.I. + Pharrell
+All The Stars|Kendrick Lamar
+Candle In The Wind 1997/Something About The Way You Look Tonight|Elton John
+God's Plan|Drake
+No One|Alicia Keys
+Stressed Out|Twenty One Pilots
+I Will Always Love You|Whitney Houston
+Beautiful Things|Benson Boone
+End Of The Road|Boyz II Men
+Shallow|Lady Gaga
+The Hills|The Weeknd
+Boom Boom Pow|The Black Eyed Peas
+Creep|Radiohead
+Call Me|Blondie
+Treat You Better|Shawn Mendes
+Let Me Love You|Mario
+Demons|Imagine Dragons
+Stayin' Alive|Bee Gees
+Do I Wanna Know?|Arctic Monkeys
+Lady|Kenny Rogers
+See You Again|Tyler, The Creator
+Tik Tok|Ke$ha
+Thunder|Imagine Dragons
+I'm A Believer|The Monkees
+Smells Like Teen Spirit|Nirvana
+Gold Digger|Kanye West, Jamie Foxx
+Wonderwall|Oasis
+Apologize|Timbaland, OneRepublic
+Seven|Jung Kook
+The Sign|Ace of Base
+Sorry|Justin Bieber
+Centerfold|The J. Geils Band
+Unforgettable|French Montana
+All About That Bass|Meghan Trainor
+505|Arctic Monkeys
+No Role Modelz|J. Cole

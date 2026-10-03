@@ -15,7 +15,8 @@
     "start": "node server/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "catalog": "node scripts/build-catalog.mjs",
+    "alltime:lists": "node scripts/alltime/make-lists.mjs",
+    "alltime": "node scripts/build-alltime.mjs",
     "snapshot:sg": "node scripts/snapshot-sg.mjs",
     "playlists": "node scripts/build-playlists.mjs"
   },

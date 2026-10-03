@@ -1,0 +1,145 @@
+# name: All Time (Mandarin)
+# lang: zh
+# Built by scripts/alltime/make-lists.mjs on 2026-10-03 from: all-time stream totals on Spotify's Taiwan daily chart (kworb.net)
+# Left out: sung in Taiwanese Hokkien rather than Mandarin, a Japanese song, an alternate version, or a repeat. Order: as merged from the sources (best first).
+# One song per line: title|artists
+不是因為天氣晴朗才愛你|Bestards
+Without You|高爾宣 OSN
+如果可以 - 電影"月老"主題曲|WeiBird
+怎麼了|Eric Chou
+飞鸟和蝉|Ren Ran
+披星戴月的想你|告五人
+慢冷|Fish Leong
+刻在我心底的名字 (Your Name Engraved Herein) - 電影主題曲|Crowd Lu
+擱淺|Jay Chou
+年少有為|Ronghao Li
+晴天|Jay Chou
+離開的一路上|Bestards
+想見你想見你想見你(電視劇"想見你"片尾曲)|831
+有些|颜人中
+幾分之幾 - 電影主題曲|Crowd Lu
+我会等|承桓
+光年之外 (電影 《Passengers》 中國區主題曲)|G.E.M.
+从前说|小阿七
+小情歌|sodagreen
+好不容易 (《華燈初上》片尾曲)|告五人
+在加納共和國離婚|Firdhaus
+愛人錯過|告五人
+想和你看五月的晚霞|陳華
+你,好不好? - TVBS連續劇【遺憾拼圖】片尾曲|Eric Chou
+遇見|Stefanie Sun
+字字句句|卢卢快闭嘴
+有一種悲傷 - 電影《比悲傷更悲傷的故事》主題曲|A-Lin
+你的答案|阿冗
+路過人間 (電視劇《我們與惡的距離》插曲)|Yisa Yu
+我就想你|Bestards
+Why You Gonna Lie|高爾宣 OSN
+嘉宾|张远
+在這座城市遺失了你 (戲劇《他們創業的那些鳥事》插曲)|告五人
+珊瑚海|Jay Chou
+連名帶姓|A-Mei Chang
+跳楼机|LBI利比
+我很好騙|Power Station
+我懷念的|Stefanie Sun
+紅色高跟鞋|Tanya Chua
+真的傻 (電影《一吻定情》追愛版主題曲)|LaLa Hsu
+毒藥|Xiao Bing Chih
+當你|Cyndi Wang
+七里香|Jay Chou
+多遠都要在一起|G.E.M.
+終究還是因為愛|TRASH
+以後別做朋友|Eric Chou
+嚣张|en王翊恩
+特別的人|Khalil Fong
+失重前幸福|艾薇 Ivy
+愛情的大壞蛋|Amazing Show
+家家酒|Jia Jia
+最後一次|高爾宣 OSN
+愛我還是他|David Tao
+讓我留在你身邊|Eason Chan
+太陽與地球|Crowd Lu
+說好不哭|Jay Chou
+後來的我們|Mayday
+勇气|棉子
+孤勇者 - 《英雄聯盟:雙城之戰》動畫劇集中文主題曲|Eason Chan
+泡沫|G.E.M.
+不為誰而作的歌|JJ Lin
+如果雨之後|Eric Chou
+想太多|Nicky Lee
+CHANGE|瘦子E.SO
+唯一 (三立/台視戲劇《戀愛是科學》插曲)|告五人
+體面(電影《前任3:再見前任》插曲)|Kelly Yu
+楓|Jay Chou
+演員|Joker Xue
+慢慢喜歡你|Karen Mok
+訣愛 (劇集《蒼蘭訣》片頭曲)|Faye 詹雯婷
+烏梅子醬|Ronghao Li
+一個人想著一個人|Pets Tseng
+不將就 (電影"何以笙簫默"片尾曲)|Ronghao Li
+Hold On|高爾宣 OSN
+最後一堂課 - 《媽,別鬧了!》影集片尾曲|Eric Chou
+摯友|Eric Chou
+小城夏天|LBI利比
+很久以後 - 電影《可不可以,你也剛好喜歡我》主題曲|G.E.M.
+愛你但說不出口|Karencici
+她沒在看我|瘦子E.SO
+像晴天像雨天（电视剧《难哄》心动曲）|Silence Wang
+0321|Roxy马瑞欣
+我們的愛|F.I.R.
+这是你期盼的长大吗|ZQS
+眼淚記得你 - 電影《想見你》主題曲|Shi Shi
+離開我的依賴|Evangeline Wong
+倒數|G.E.M.
+愛愛愛|Khalil Fong
+太陽|Pika Chiu
+句號|G.E.M.
+一路向北|Jay Chou
+十年|Eason Chan
+是你.|政學zedx
+開始懂了|Stefanie Sun
+起风了 - 电视剧"加油你是最棒的"主题曲|吳青峰
+你不屬於我 - 《比悲傷更悲傷的故事》影集版片尾曲|Eric Chou
+妥協|JOLIN
+感谢你曾来过|阿涵
+那些你很冒險的夢|JJ Lin
+對等關係|Ronghao Li
+愚人節快樂|Crowd Lu
+我喜歡你|芒果醬 Mango Jump
+看着我的眼睛说|张远
+無人知曉|Hebe Tien
+告白氣球|Jay Chou
+人質|A-Mei Chang
+年輪說|Rainie Yang
+一念之間|告五人
+Crush On|李浩瑋 Howard Lee
+那女孩對我說|Rachel Liang
+一夜一夜一夜|Crowd Lu
+能不能和我留在台北(陪我幾天)|icyball 冰球樂團
+擋一根|Amazing Show
+雪 Distance|Capper
+天后|Andrew Tan
+间距|en
+愛錯|Leehom Wang
+瞬|郑润泽
+魚仔 - 電視劇主題曲|Crowd Lu
+太陽|瘦子E.SO
+淚橋|Wu Bai
+偷偷愛|Amazing Show
+玫瑰少年|JOLIN
+能遇見，就很不錯了|Firdhaus
+绿色|Shirley Chen
+想知道你在想什麼 - 《我吃了那男孩一整年的早餐》電影主題曲|Eric Chou
+兜圈 (偶像劇「必娶女人」片尾曲)|Yoga Lin
+你敢不敢|LaLa Hsu
+哪里都是你|隊長
+愛, 很簡單|David Tao
+可惜沒如果|JJ Lin
+少年|梦然
+愛我的時候|Eric Chou
+幸福在歌唱 - 電影《陽光女子合唱團》幸福版主題曲|A-Lin
+永不失聯的愛|Eric Chou
+无人之岛|Ren Ran
+你要的全拿走|Tiger Hu
+行星|Bestards
+后继者|Ren Ran
+Somebody Else|高爾宣 OSN

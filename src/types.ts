@@ -6,7 +6,7 @@ export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert' | 'impossible';
 /** Where songs come from: the curated language catalogue, your own Spotify playlists, or this week's Singapore chart. */
 export type Pool = 'mix' | 'mine' | 'sg-now';
 
-/** One playable song, as written by scripts/build-catalog.mjs. */
+/** One playable song, as written by scripts/build-alltime.mjs (and the playlist and chart scripts). */
 export interface Song {
   /** iTunes track id */
   id: string;

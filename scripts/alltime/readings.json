@@ -1,0 +1,11 @@
+{
+  "_about": "Romaji readings (and an official English title where there is one) for All Time songs whose title is in kanji and that Apple's English-language stores don't romanise. Added to what players can type and shown under the title. Key: 'title|first artist', exactly as in the list file. Used by scripts/build-alltime.mjs.",
+  "夜に駆ける|YOASOBI": ["Yoru ni Kakeru", "Racing into the Night"],
+  "怪獣の花唄|Vaundy": ["Kaiju no Hanauta"],
+  "115万キロのフィルム|OFFICIAL HIGE DANDISM": ["Hyaku Juugoman Kiro no Firumu"],
+  "ただ君に晴れ|Yorushika": ["Tada Kimi ni Hare"],
+  "不可幸力|Vaundy": ["Fukakouryoku"],
+  "美しい鰭|SPITZ": ["Utsukushii Hire"],
+  "踊り子|Vaundy": ["Odoriko"],
+  "花占い|Vaundy": ["Hana Uranai"]
+}

@@ -1,4 +1,4 @@
-// Pure text helpers shared by the app and by scripts/build-catalog.mjs
+// Pure text helpers shared by the app and by the build scripts (scripts/*.mjs)
 // (Node runs this file directly, so keep it to erasable TypeScript: no enums or namespaces).
 
 /**

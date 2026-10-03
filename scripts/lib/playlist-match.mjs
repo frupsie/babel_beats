@@ -56,6 +56,8 @@ const RECUT = new RegExp(
     String.raw`\bdj`,
     String.raw`\b(?:mix|piano|nightcore|off ?vocal|tv ?size|anime size|concert|tour|lo-?fi|8d)\b`,
     String.raw`\benglish (?:edition|ver(?:sion|\.)?)`,
+    String.raw`\bfirst take\b|\bre-?record(?:ed|ing)?\b|\bdub\b|\bballad ver(?:sion|\.)?|\b(?:strings|acoustic|solo) ver(?:sion|\.)?`,
+    'リテイク|再録|ヴァージョン|バージョン|ストリングス|アコースティック',
     String.raw`\b\d(?:\.\d+)?x\b`,
     '混音|串燒|串烧|現場|现场|演唱[會会]|抒情版|合唱版|不插[電电]|純音樂|纯音乐|鋼琴版|钢琴版|吉他版|小提琴版',
     '降速版|加速版|變速版|变速版|電音版|电音版|卡點節奏|卡点节奏|環繞版|环绕版|健康版|概念版',
@@ -64,6 +66,34 @@ const RECUT = new RegExp(
   'i',
 );
 const isRecut = (text) => UNWANTED.test(text) || RECUT.test(text);
+
+/**
+ * Words that mark a different cut of a song when they appear in its brackets or after a dash ("(Zwette Edit)", "- Long
+ * Version"). Radio and single edits, album versions and remasters are the song itself and are not counted.
+ */
+const VERSION_WORD = /\b(?:edit|dub|mix|remix|version|ver\.|extended|long|short|club|stripped|reprise|original|cover|italian|german|spanish|french|korean|japanese|english|mandarin|cantonese)\b/i;
+const SAME_RECORDING = /\b(?:radio|single|album|main|explicit|clean|stereo|mono|video) (?:edit|version|ver\.)|\bremaster(?:ed)?(?: \d{4})?\b|\b\d{4} (?:remaster|version)|\bfeat\.?|\bfeaturing\b|\bwith\b/gi;
+
+/** Is this track a particular version of the song (an edit, a ballad cut...) when the row asks for the plain song? */
+export function isOtherVersion(trackName, rowTitle) {
+  const notes = [...trackName.matchAll(/[(（[【]([^()（）[\]【】]*)[)）\]】]|\s[-–—]\s+(.*)$/g)].map((m) => m[1] ?? m[2] ?? '');
+  const extra = notes.join(' ; ').replace(SAME_RECORDING, ' ');
+  return VERSION_WORD.test(extra) && !VERSION_WORD.test(rowTitle);
+}
+
+/** Whether an Apple result is another cut of the song, judging by its title and, for a single named after it, its album. */
+export function isOtherVersionTrack(r, rowTitle) {
+  if (isOtherVersion(r.trackName, rowTitle)) return true;
+  // A single or EP named after the song ("Song (Extended Version) - Single") describes the track on it too.
+  return releaseKind(r) < 2 && isOtherVersion(r.collectionName.replace(RELEASE_SUFFIX, ''), rowTitle);
+}
+
+/** Artists named in a title's "(feat. X & Y)" or "with X", split into people: ["X", "Y"]. */
+export function featuredArtists(trackName) {
+  return [...trackName.matchAll(/(?:feat\.?|featuring|with)\s+([^)\]]+)/gi)].flatMap((m) =>
+    m[1].split(/\s*(?:&|,|\band\b)\s*/i).map((a) => a.trim()).filter(Boolean),
+  );
+}
 
 /** An Apple result we would accept as the song: has a preview, and isn't a live/remix/karaoke/DJ re-cut the row doesn't ask for. */
 export const wanted = (r, s) =>
@@ -92,7 +122,7 @@ export const titleMatches = (s, titles) =>
 
 /**
  * Artist aliases ("Jay Chou" = "周杰倫" = "zhou jie lun"), as groups of spellings known to be one person.
- * Seeded from the curated catalogue and extended by every song that matches, so one confirmed song teaches the rest.
+ * Seeded from the All Time catalogue and extended by every song that matches, so one confirmed song teaches the rest.
  */
 export function createAliasBook() {
   const parent = new Map();

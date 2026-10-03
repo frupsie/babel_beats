@@ -16,7 +16,7 @@ export function langStyle(code: LangCode): CSSProperties {
 /** Plain black ink for Singapore chart songs: their language is only a guess, so they get no language colour. */
 export const SG_STYLE = { '--lang': '#17140f', '--on-lang': '#f7f1e3' } as CSSProperties;
 
-/** The `lang` attribute for a song's text. Singapore writes Chinese in Simplified characters; the curated catalogue is Traditional. */
+/** The `lang` attribute for a song's text: Simplified Chinese for Singapore chart songs, Traditional for other Chinese songs. */
 export function songHtmlLang(song: Pick<Song, 'lang' | 'fromChart'>): string {
   return song.fromChart && song.lang === 'zh' ? 'zh-Hans' : languageInfo(song.lang).htmlLang;
 }

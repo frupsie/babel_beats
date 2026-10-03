@@ -1,7 +1,6 @@
 /**
- * The single place a language is defined. To add one: add an entry here, create
- * scripts/seeds/<code>.json, register its storefronts in scripts/build-catalog.mjs,
- * and run `npm run catalog`.
+ * The single place a language is defined. To add one: add an entry here, add its Apple storefronts to LANGS in
+ * scripts/lib/resolve-list.mjs, give it a source list in scripts/alltime/<code>.txt, and run `npm run alltime`.
  *
  * `color` is the language's ink; `onColor` is the text colour that stays readable on top of it.
  */

@@ -5,6 +5,9 @@ import {
   artistMatches,
   buildSong,
   createAliasBook,
+  featuredArtists,
+  isOtherVersion,
+  isOtherVersionTrack,
   learnAliases,
   prepare,
   releaseKind,
@@ -75,6 +78,20 @@ describe('wanted', () => {
   it('rejects DJ, mix, live-chorus and lyrical re-cuts', () => {
     for (const trackName of ['晴天 (DJ版)', '晴天 (DJ名龍版)', '晴天 (DJ墨韓Mix版)', '晴天 (現場合唱版)', '晴天 (抒情版)']) {
       expect(wanted(track({ trackName }), row)).toBe(false);
+    }
+  });
+
+  it('rejects re-recordings, "From THE FIRST TAKE", dub and ballad or strings cuts', () => {
+    for (const trackName of [
+      'そばにいるね - From THE FIRST TAKE',
+      '366日 (Rerecorded)',
+      '紡ぐ (Re-recorded)',
+      'Mr. Brightside (The Lindbergh Palace Dub)',
+      'Flavor Of Life (Ballad Version)',
+      'また君に恋してる (ストリングス・ヴァージョン)',
+      '夏の終わり (Acoustic Ver.)',
+    ]) {
+      expect(wanted(track({ trackName }), row), trackName).toBe(false);
     }
   });
 
@@ -279,5 +296,68 @@ describe('buildSong', () => {
     const song = buildSong(ja('Lemon', 'Kenshi Yonezu'), track({ trackName: 'Lemon', artistName: '米津玄師' }), [], 'jp');
     expect(song).not.toHaveProperty('subtitle');
     expect(song).not.toHaveProperty('artistEn');
+  });
+});
+
+describe('isOtherVersion', () => {
+  it('spots an edit, dub, long or ballad cut when the row asks for the plain song', () => {
+    for (const name of [
+      'We Found Love (Cahill Edit)',
+      'Mr. Brightside (The Lindbergh Palace Dub)',
+      'Another Love (Zwette Edit)',
+      'Billie Jean (Long Version)',
+      'Flavor Of Life (Ballad Version)',
+      'Dragostea din tei (Original Italian version)',
+      'Hold On - Extended Mix',
+    ]) {
+      expect(isOtherVersion(name, 'Song'), name).toBe(true);
+    }
+  });
+
+  it('treats radio and single edits, remasters, features and film credits as the song itself', () => {
+    for (const name of [
+      'Too Close (Radio Edit)',
+      'Le Freak (Single Edit)',
+      "Let's Get It On (Single Version)",
+      'Physical (Remastered 2021)',
+      "Tonight's the Night (Gonna Be Alright) [2008 Remaster]",
+      'Uptown Funk (feat. Bruno Mars)',
+      'Hotel California - Remastered',
+      'Sunflower (Spider-Man: Into the Spider-Verse)',
+      '你,好不好?(TVBS連續劇【遺憾拼圖】片尾曲)',
+      'Shape of You',
+    ]) {
+      expect(isOtherVersion(name, 'Song'), name).toBe(false);
+    }
+  });
+
+  it('lets a row ask for the version it wants', () => {
+    expect(isOtherVersion('Fly Me to the Moon (Original Version)', 'Fly Me to the Moon (Original Version)')).toBe(false);
+  });
+});
+
+describe('isOtherVersionTrack', () => {
+  it('also reads a single named after the song: "(Extended Version) - Single" is an extended cut', () => {
+    const r = { trackName: 'We Found Love', collectionName: 'We Found Love (Extended Version) - Single' };
+    expect(isOtherVersionTrack(r, 'We Found Love')).toBe(true);
+  });
+
+  it('does not read an album title: "Greatest Hits (Deluxe Version)" says nothing about the track', () => {
+    const r = { trackName: 'How Do I Live', collectionName: 'Greatest Hits (Deluxe Version)' };
+    expect(isOtherVersionTrack(r, 'How Do I Live')).toBe(false);
+  });
+});
+
+describe('featuredArtists', () => {
+  it('lists the people in a feat. or with credit', () => {
+    expect(featuredArtists('We Found Love (feat. Calvin Harris)')).toEqual(['Calvin Harris']);
+    expect(featuredArtists('Song (with A & B)')).toEqual(['A', 'B']);
+    expect(featuredArtists('Plain')).toEqual([]);
+  });
+
+  it('lets a track credited to one artist with a feature cover a two-artist row', () => {
+    const row = prepare({ title: 'We Found Love', artists: ['Rihanna', 'Calvin Harris'] }, 'en');
+    const credit = ['Rihanna', ...featuredArtists('We Found Love (feat. Calvin Harris)')];
+    expect(artistFit(row, credit, createAliasBook())).toMatchObject({ verified: 2, extra: 0 });
   });
 });
