@@ -359,7 +359,7 @@ function Lobby({ state, me, party }: { state: RoomState; me: PublicPlayer; party
 }
 
 function SettingsSummary({ settings: s, eligible }: { settings: PartySettings; eligible: number }) {
-  const list = s.pool === 'sg-now' ? 'Singapore chart' : s.pool === 'mine' ? 'Playlists' : 'Mix';
+  const list = s.pool === 'sg-now' ? 'Popular' : s.pool === 'mine' ? 'Playlists' : 'All Time';
   const langs = s.pool === 'sg-now' ? 'all languages' : s.langs.map((c) => LANGUAGES.find((l) => l.code === c)?.name).join(', ');
   const diff = DIFFICULTIES.find((d) => d.id === s.difficulty)?.label;
   const era = ERAS.find((e) => e.id === s.era)?.label;
@@ -551,7 +551,7 @@ function PartyRound({
                 ? triesCount < round.ladder.length
                   ? 'You gave up. Waiting for the others…'
                   : 'Out of tries. Waiting for the others…'
-                : `Try ${triesCount + 1} of ${round.ladder.length}`;
+                : `${round.ladder.length - triesCount} ${round.ladder.length - triesCount === 1 ? 'try' : 'tries'} left`;
 
   return (
     <div className="party-round">

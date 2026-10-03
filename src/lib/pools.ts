@@ -7,7 +7,7 @@ import { buildListPool, type ListPool, type PlaylistInfo, type PlaylistsFile } f
 import { buildSgPool, type SgSnapshot } from './sgNow.ts';
 
 export interface SongPools {
-  /** The curated language catalogue ("My mix"). */
+  /** The curated language catalogue ("All Time"). */
   catalog: readonly Song[];
   /** Your Spotify playlists, as resolved by scripts/build-playlists.mjs. */
   playlists: readonly PlaylistInfo[];

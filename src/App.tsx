@@ -48,7 +48,7 @@ import { gainFor } from './lib/volume';
 import type { Difficulty, Era, Pool, Settings, Song, Stats } from './types';
 
 // The song lists (see lib/songData.ts and lib/pools.ts).
-// "Singapore now": the snapshot is written by scripts/snapshot-sg.mjs, which npm runs before `dev` and `build`
+// "Popular" (this week's Singapore chart): the snapshot is written by scripts/snapshot-sg.mjs, which npm runs before `dev` and `build`
 // whenever the file is 7+ days old. It is a static file because Apple's chart feed can't be read from a browser.
 // "My playlists": your Spotify playlists, resolved to songs Apple can preview by scripts/build-playlists.mjs.
 const { catalog: CATALOG, sg: SG, mine: MINE, playlists: PLAYLISTS } = POOLS;
@@ -62,6 +62,11 @@ const poolSongs = (pool: Pool): readonly Song[] => poolSongsIn(POOLS, pool);
 const MAX_LOAD_TRIES = 4;
 
 type Phase = 'loading' | 'ready' | 'empty' | 'error';
+
+/** "5 tries left", "1 try left". */
+function triesLeft(n: number): string {
+  return `${n} ${n === 1 ? 'try' : 'tries'} left`;
+}
 
 /** Filter that roughens edges so stamps and the wordmark look printed rather than typeset. */
 function InkFilter() {
@@ -89,6 +94,8 @@ export default function App() {
   const [playing, setPlaying] = useState<{ id: number; seconds: number } | null>(null);
   /** How much of the next song has downloaded (0–1) while a round loads. */
   const [loadProgress, setLoadProgress] = useState<number | null>(null);
+  /** Whether the current song has been heard at all (until then the status line says "Tap to play"). */
+  const [heard, setHeard] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   // "Play with friends": a party room instead of the solo game. A shared room link (?room=CODE) opens it directly.
   const [mode, setMode] = useState<'solo' | 'party'>(() => (roomFromUrl() ? 'party' : 'solo'));
@@ -121,13 +128,15 @@ export default function App() {
   };
 
   const playClip = useCallback((buffer: AudioBuffer, seconds: number) => {
+    setHeard(true);
     const id = ++playIdRef.current;
     setPlaying({ id, seconds: Math.min(seconds, buffer.duration) });
     engine.play(buffer, seconds, () => setPlaying((p) => (p?.id === id ? null : p)));
   }, []);
 
   // ---------------------------------------------------------------- rounds
-  const startRound = useCallback(async (s: Settings) => {
+  /** `autoplay`: play the first clip once the song is ready (Next song); not after a settings change. */
+  const startRound = useCallback(async (s: Settings, autoplay = false) => {
     const token = ++loadTokenRef.current;
     abortRef.current?.abort();
     const abort = new AbortController();
@@ -163,9 +172,10 @@ export default function App() {
         setRound(fresh);
         setPhase('ready');
         setLoadProgress(null);
-        // Once the song is ready, its first clip plays by itself, unless the visitor hasn't clicked or tapped yet
-        // (browsers block sound until then; the status line says "Tap to play").
-        if (engine.ready) playClip(buffer, currentClip(fresh));
+        setHeard(false);
+        // After "Next song" the first clip plays by itself once the song is ready (if the browser allows sound yet).
+        // A new song from a settings change waits for a tap: the player is still choosing.
+        if (autoplay && engine.ready) playClip(buffer, currentClip(fresh));
         return;
       } catch (err) {
         if (token !== loadTokenRef.current || abort.signal.aborted) return;
@@ -364,7 +374,7 @@ export default function App() {
               <p className="note">
                 {sgMode ? (
                   <>
-                    This week’s Apple Music Singapore chart, {poolSize} songs. Chart songs mix languages and eras, so the language and
+                    Popular right now: this week’s Apple Music Singapore top {poolSize}. Chart songs mix languages and eras, so the language and
                     era filters are off.
                     {SG_STALE &&
                       (import.meta.env.DEV
@@ -411,10 +421,10 @@ export default function App() {
               <div className="notice">
                 <h2>No chart yet</h2>
                 <p>
-                  The Singapore list hasn’t been downloaded. Run <code>npm run snapshot:sg</code>, or switch back to your mix.
+                  The Popular list hasn’t been downloaded. Run <code>npm run snapshot:sg</code>, or switch back to All Time.
                 </p>
                 <button type="button" className="btn btn--primary" onClick={() => setPool('mix')}>
-                  Back to My mix
+                  Back to All Time
                 </button>
               </div>
             )}
@@ -460,9 +470,9 @@ export default function App() {
                     {phase === 'loading'
                       ? 'Loading the song…'
                       : round && !finished
-                        ? round.guesses.length === 0 && !playing && !engine.ready
+                        ? round.guesses.length === 0 && !heard
                           ? 'Tap to play'
-                          : `Try ${round.guesses.length + 1} of ${round.ladder.length}`
+                          : triesLeft(round.ladder.length - round.guesses.length)
                         : finished
                           ? 'Round over'
                           : ''}
@@ -489,7 +499,7 @@ export default function App() {
                     rank={round.pool === 'sg-now' ? SG.rank.get(round.song.id) : undefined}
                     playingFull={playing !== null}
                     onPlayFull={togglePlay}
-                    onNext={() => void startRound(settings)}
+                    onNext={() => void startRound(settings, true)}
                   />
                 ) : (
                   <>
@@ -533,7 +543,6 @@ export default function App() {
             How to play &amp; about
           </button>
         </p>
-        <p>Song previews and artwork via Apple’s iTunes Search API. Not affiliated with Apple or any artist.</p>
         <p className="footer__copy">© {new Date().getFullYear()} Babel Beats. All rights reserved.</p>
       </footer>
 

@@ -29,11 +29,11 @@ npm start          # the production server: dist/ plus party rooms, on PORT (def
 | Round rules, difficulty ladders, era filter, song picking | `src/lib/game.ts` |
 | Autocomplete and answer checking (native script, romaji, pinyin, English gloss) | `src/lib/match.ts`, `src/lib/text.ts` |
 | Web Audio clip player | `src/lib/audio.ts` |
-| "Singapore now" list: downloads Apple's chart and writes the snapshot | `scripts/snapshot-sg.mjs` → `src/data/sg-now.json` |
+| "Popular" list (this week's Singapore chart): downloads Apple's chart and writes the snapshot | `scripts/snapshot-sg.mjs` → `src/data/sg-now.json` |
 | "My playlists": your Spotify playlists as text, and the script that finds each song on Apple | `scripts/playlists/*.txt` → `scripts/build-playlists.mjs` → `src/data/playlists.json` |
 | The rules for "is this Apple hit really that Spotify song?" (tested) | `scripts/lib/playlist-match.mjs` |
 | Shared, rate-limited, cached Apple client and Chinese-text helpers | `scripts/lib/itunes.mjs`, `scripts/lib/han.mjs` |
-| "Singapore now" logic shared by that script and the app | `src/lib/sgNow.ts` |
+| "Popular" list logic shared by that script and the app | `src/lib/sgNow.ts` |
 | The song lists, shared by the browser and the party server | `src/lib/pools.ts` (built in `src/lib/songData.ts`) |
 | Party rooms: messages and validation, the room rules (tested), the screens | `src/party/protocol.ts`, `src/party/room.ts`, `src/party/PartyView.tsx` |
 | Party server (WebSockets at `/party`) and the production server | `server/party.ts`, `server/index.ts` |
@@ -75,9 +75,9 @@ Free tiers that put the server to sleep when idle are fine for friends: the firs
 wakes up. To keep the site on a static host and run only the rooms elsewhere, build with
 `VITE_PARTY_URL=wss://your-server.example/party npm run build`.
 
-## Singapore now
+## Popular (Singapore chart)
 
-The **Singapore now** tab plays this week's Apple Music Singapore top 100 instead of the language mix. Chart songs mix
+The **Popular** tab plays this week's Apple Music Singapore top 100 instead of the All Time list. Chart songs mix
 languages and eras, so the language and era filters switch off, and the reveal card shows the song's chart position
 (`SG #12`) instead of a language.
 
@@ -135,7 +135,7 @@ just the Chinese playlist, just the Japanese one, or both. English is greyed out
   carry in these stores, or covers by other artists. Some are on Apple under a native-script title only, with no English
   spelling to check a romanised Spotify title against (Spotify's "Kaikai Kitan" is Apple's 廻廻奇譚), so they stay out.
 - **Last run (2026-09-21):** 408 of the Chinese playlist's 456 songs and 489 of the Japanese playlist's 522 are playable, 897
-  in all (54 of them are also in the curated mix and use its entries).
+  in all (54 of them are also in the All Time list and use its entries).
 - **Years are Apple's release dates,** not curated, so the era filter can be off for re-issued songs. A song that is also in
   the curated catalogue uses the catalogue's entry instead.
 - **It is rate-limited:** Apple throttles searches (HTTP 429), so the first full run of both playlists takes about 40

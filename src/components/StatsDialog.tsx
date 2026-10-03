@@ -66,7 +66,7 @@ export function StatsDialog({ dialogRef, stats, onReset }: Props) {
             );
           })}
         </ul>
-        <p className="note note--tight">Singapore now rounds count toward played, win rate and streak, but not the language bars.</p>
+        <p className="note note--tight">Popular rounds count toward your totals and streak, but not the language bars (chart songs have no set language).</p>
 
         <div className="sheet__actions">
           <button

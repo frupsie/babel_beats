@@ -20,12 +20,12 @@ interface Props {
   chartDate: string;
 }
 
-/** Tabs for where songs come from: the curated language mix, your own playlists, or this week's Singapore chart. */
+/** Tabs for where songs come from: all-time hits ("All Time"), your own playlists, or this week's Singapore chart ("Popular"). */
 export function PoolSwitch({ pool, onChange, mixCount, mineCount, sgCount, chartDate }: Props) {
   const options: Option[] = [
-    { id: 'mix', label: 'My mix', detail: `${mixCount} songs`, disabled: false },
+    { id: 'mix', label: 'All Time', detail: `${mixCount} songs`, disabled: false },
     { id: 'mine', label: 'My playlists', detail: mineCount > 0 ? `${mineCount} songs` : 'none yet', disabled: mineCount === 0 },
-    { id: 'sg-now', label: 'Singapore now', detail: sgCount > 0 ? `top ${sgCount} · ${chartDate}` : 'not downloaded yet', disabled: sgCount === 0 },
+    { id: 'sg-now', label: 'Popular', detail: sgCount > 0 ? `SG top ${sgCount} · ${chartDate}` : 'not downloaded yet', disabled: sgCount === 0 },
   ];
 
   return (
