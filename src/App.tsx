@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LANGUAGES, LANG_CODES, languageInfo, type LangCode } from './data/languages';
+import { AboutDialog } from './components/AboutDialog';
 import { GuessBox } from './components/GuessBox';
 import { Ladder } from './components/Ladder';
 import { LanguagePicker } from './components/LanguagePicker';
@@ -100,6 +101,7 @@ export default function App() {
   /** The longer clip waiting to play after a skip; any other action cancels it. */
   const autoplayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsDialogRef = useRef<HTMLDialogElement>(null);
+  const aboutDialogRef = useRef<HTMLDialogElement>(null);
 
   // Songs per language in the list being played; a language with none can't be switched on.
   const counts = useMemo(() => {
@@ -401,14 +403,6 @@ export default function App() {
                 disabled={sgMode}
               />
 
-              <h2 className="kicker howto__title">
-                <span className="kicker__n">?</span>How to play
-              </h2>
-              <ol className="howto">
-                <li>Tap the record to hear a short clip of a song.</li>
-                <li>Type a guess and pick the song from the list, or skip to hear a longer clip.</li>
-                <li>You have six tries. The fewer you need, the better your result.</li>
-              </ol>
             </div>
           </section>
 
@@ -534,11 +528,16 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <p>
-          Previews &amp; artwork via the iTunes Search API. Not affiliated with Apple or any artist. Songs are hand-picked; add a language by
-          adding a list.
+        <p className="footer__links">
+          <button type="button" className="linkish" onClick={() => aboutDialogRef.current?.showModal()}>
+            How to play &amp; about
+          </button>
         </p>
+        <p>Song previews and artwork via Apple’s iTunes Search API. Not affiliated with Apple or any artist.</p>
+        <p className="footer__copy">© {new Date().getFullYear()} Babel Beats. All rights reserved.</p>
       </footer>
+
+      <AboutDialog dialogRef={aboutDialogRef} />
 
       <StatsDialog
         dialogRef={statsDialogRef}

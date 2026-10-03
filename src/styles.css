@@ -595,9 +595,6 @@ button {
   transform: none;
 }
 
-.howto__title {
-  margin-top: 30px;
-}
 .howto {
   display: grid;
   gap: 9px;
@@ -1222,6 +1219,17 @@ button {
   max-width: 62ch;
   margin: 0;
 }
+.footer .footer__links {
+  margin-bottom: 10px;
+  font: 700 0.8rem var(--f-body);
+  letter-spacing: 0;
+}
+.footer__links .linkish {
+  color: var(--ink);
+}
+.footer .footer__copy {
+  margin-top: 8px;
+}
 
 /* ------------------------------------------------------------------ stats sheet */
 
@@ -1296,6 +1304,20 @@ button {
 }
 .bars__val {
   font: 500 0.7rem var(--f-mono);
+}
+.about {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding-left: 1.1em;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+.sheet .howto {
+  margin-bottom: 12px;
+}
+.sheet__actions.sheet__actions--end {
+  justify-content: flex-end;
 }
 .sheet__actions {
   display: flex;
