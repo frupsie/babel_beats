@@ -24,11 +24,12 @@ npm start          # the production server: dist/ plus party rooms, on PORT (def
 | Piece | Where |
 | --- | --- |
 | "All Time" source lists from public all-time charts, and the script that builds them | `scripts/alltime/<lang>.txt` ← `scripts/alltime/make-lists.mjs` |
+| Extra hits that fill thin eras (English from Billboard year-end lists; Mandarin and Japanese by hand), and year fixes | `scripts/alltime/extras-<lang>.txt`, `scripts/alltime/years.json` |
 | Script that finds those songs on Apple and writes the All Time catalogue | `scripts/build-alltime.mjs` → `src/data/catalog.json` |
 | Shared "search Apple and verify each song" step (All Time and playlists) | `scripts/lib/resolve-list.mjs` |
 | Language registry (name, glyph, ink colour) | `src/data/languages.ts` |
 | Round rules, difficulty ladders, era filter, song picking | `src/lib/game.ts` |
-| Autocomplete and answer checking (native script, romaji, pinyin, English gloss) | `src/lib/match.ts`, `src/lib/text.ts` |
+| Autocomplete and answer checking (native script, romaji, pinyin, English gloss; every credited or featured artist is searchable) | `src/lib/match.ts`, `src/lib/text.ts` |
 | Web Audio clip player | `src/lib/audio.ts` |
 | The game's Singlish lines (answer stamps, "Aiyo, miss!", loading text); edit or tone down here | `src/lib/voice.ts` (the loading screen's copy is also in `index.html`) |
 | "Popular" list (this week's Singapore chart): downloads Apple's chart and writes the snapshot | `scripts/snapshot-sg.mjs` → `src/data/sg-now.json` |
@@ -46,8 +47,9 @@ catalogue if that lookup fails.
 
 ## All Time
 
-The **All Time** tab plays about 100 of the most popular songs of all time in each language, taken from public all-time
-charts (`npm run alltime:lists` downloads them into `scripts/alltime/<lang>.txt`):
+The **All Time** tab plays the 100 most popular songs of all time in each language, taken from public all-time charts
+(`npm run alltime:lists` downloads them into `scripts/alltime/<lang>.txt`), plus enough extra hits that **every era has at
+least 30 songs in every language** (see "Filling the eras" below):
 
 - **English:** Spotify's all-time most-streamed songs (from kworb.net) alternating with Billboard's Greatest of All Time
   Hot 100, so it mixes streaming-era hits with classics.
@@ -60,10 +62,25 @@ Songs in another language (Spanish hits, K-pop, Taiwanese Hokkien), noise tracks
 left out; `scripts/alltime/make-lists.mjs` lists each exclusion with its reason. `npm run alltime` then finds every song
 on Apple and verifies it the same way as your playlists (title and artist must both match), keeping the first 100
 verified songs per language; songs Apple can't preview or verify are skipped and the next one down takes their place
-(see `scripts/.cache/alltime-report.txt`). Years are Apple's earliest release date for the recording, so a classic may
-show a later reissue year. Streaming totals favour recent music: Mandarin has no songs from before 2000 and Japanese only a
-few, so those languages have little or nothing under the Classic era filter. `scripts/alltime/readings.json` holds romaji
-for a few kanji titles that Apple's English-language stores don't romanise.
+(see `scripts/.cache/alltime-report.txt`). Years are Apple's release date for the recording; where that is a later
+compilation's date or a 1 January placeholder, `scripts/alltime/years.json` (or a year on a line of an extras file) gives the
+right one. `scripts/alltime/readings.json` holds romaji for a few kanji titles that Apple's English-language stores don't
+romanise.
+
+**Filling the eras.** All-time streaming totals favour recent music, so on their own they leave some eras thin (Mandarin had
+no songs from before 2000, English only 8 from the 2020s). After the top 100, `npm run alltime` tops each language up until
+every era (Classic, 2000s, 2010s, 2020s) has `MIN_PER_ERA` (30) songs, first from the rest of that language's all-time list
+and then from an extras file, in the same `title|artists` format (with an optional `|year`). A song only joins when its own
+era is still short, so full eras are left alone. The extras are:
+
+- **English** (`extras-en.txt`): the top 12 of Billboard's Year-End Hot 100 for each year of the 2000s and 2020s, from
+  Wikipedia. `node scripts/alltime/make-lists.mjs --extras-only` rewrites just this file.
+- **Mandarin and Japanese** (`extras-zh.txt`, `extras-ja.txt`): well-known hits of the 1960s-90s and the 2000s, **picked by
+  hand**, because no single public chart covers them. Every one still has to be found on Apple with its title and artist both
+  matching, or it is skipped, so a wrong guess costs nothing. The Mandarin list is Mandarin only (no Cantonese or Taiwanese).
+
+The Era and language buttons show how many songs each choice leaves, and an era with none for the languages switched on is
+greyed out.
 
 ## Play with friends
 
@@ -162,8 +179,9 @@ just the Chinese playlist, just the Japanese one, or both. English is greyed out
   part of an artist name (worth a glance), and a sample of accepted matches to eyeball. Most misses are songs Apple doesn't
   carry in these stores, or covers by other artists. Some are on Apple under a native-script title only, with no English
   spelling to check a romanised Spotify title against (Spotify's "Kaikai Kitan" is Apple's 廻廻奇譚), so they stay out.
-- **Last run (2026-10-03):** 408 of the Chinese playlist's 456 songs and 490 of the Japanese playlist's 522 are playable, 898
-  in all (79 of them are also in the All Time list and use its entries).
+- **Last run (2026-10-04):** 417 of the Chinese playlist's 466 songs and 490 of the Japanese playlist's 522 are playable, 907
+  in all (85 of them are also in the All Time list and use its entries). To refresh after adding songs on Spotify, read the
+  playlist page again, update `scripts/playlists/*.txt` and run `npm run playlists`; only new songs cost a search.
 - **Years are Apple's release dates,** not curated, so the era filter can be off for re-issued songs. A song that is also in
   the All Time list uses that entry instead.
 - **It is rate-limited:** Apple throttles searches (HTTP 429), so the first full run of both playlists takes about 40

@@ -5,10 +5,12 @@ import {
   DIFFICULTIES,
   applyGuess,
   currentClip,
+  eraCounts,
   eraOf,
   giveUp,
   inEra,
   ladderFor,
+  languageCounts,
   newRound,
   pickFromList,
   pickSong,
@@ -46,6 +48,28 @@ describe('eras', () => {
   it('"any" accepts every year', () => {
     expect(inEra('any', 1961)).toBe(true);
     expect(inEra('2010s', 2009)).toBe(false);
+  });
+});
+
+describe('what the language and era buttons show', () => {
+  const songs = [song('1', 'en', 1975), song('2', 'en', 2003), song('3', 'zh', 2003), song('4', 'ja', 2021), song('5', 'ja', 1999)];
+
+  it('counts songs per language for the era chosen', () => {
+    expect(languageCounts(songs, 'any')).toEqual({ en: 2, zh: 1, ja: 2 });
+    expect(languageCounts(songs, 'classic')).toEqual({ en: 1, zh: 0, ja: 1 });
+    expect(languageCounts(songs, '2000s')).toEqual({ en: 1, zh: 1, ja: 0 });
+  });
+
+  it('counts songs per era for the languages chosen', () => {
+    expect(eraCounts(songs, ['en', 'zh', 'ja'])).toEqual({ any: 5, classic: 2, '2000s': 2, '2010s': 0, '2020s': 1 });
+    expect(eraCounts(songs, ['zh'])).toEqual({ any: 1, classic: 0, '2000s': 1, '2010s': 0, '2020s': 0 });
+  });
+
+  it('agree with the songs a round can actually draw', () => {
+    for (const era of ['any', 'classic', '2000s', '2010s', '2020s'] as const) {
+      const langs = ['en', 'ja'] as const;
+      expect(eraCounts(songs, langs)[era]).toBe(poolFor(songs, { langs, era }).length);
+    }
   });
 });
 

@@ -67,8 +67,8 @@ export function StatsDialog({ dialogRef, stats, onReset }: Props) {
           })}
         </ul>
         <p className="note note--tight">
-          Popular songs come from the top 100 songs chart and have no set language, so they count toward your totals and streak but not
-          the language bars.
+          Rounds played with friends count too. Popular songs come from the top 100 songs chart and have no set language, so they count
+          toward your totals and streak but not the language bars.
         </p>
 
         <div className="sheet__actions">

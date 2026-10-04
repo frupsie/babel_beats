@@ -1,0 +1,118 @@
+# name: All Time (Japanese), extras
+# lang: ja
+# Written by hand: well-known Japanese hits from the 1960s-90s and the 2000s, because all-time streaming totals (the main list) favour recent songs.
+# Used by scripts/build-alltime.mjs only to fill eras (Classic, 2000s) that the all-time list leaves short. Each song must still be found on Apple with its title AND artist matching, or it is skipped.
+# One song per line: title|artists  (an optional third field, |1981, gives the release year when Apple's date is a later compilation's)
+# Order: one song per artist in turn, so a short top-up spreads over many artists.
+真夜中のドア〜stay with me|松原みき
+プラスティック・ラヴ|竹内まりや
+RIDE ON TIME|山下達郎
+上を向いて歩こう|坂本九
+ロビンソン|スピッツ
+innocent world|Mr.Children
+HOWEVER|GLAY
+HONEY|L'Arc~en~Ciel
+LOVE PHANTOM|B'z
+Automatic|宇多田ヒカル
+Can You Celebrate?|安室奈美恵
+Body & Soul|SPEED
+未来予想図II|DREAMS COME TRUE
+勝手にシンドバッド|サザンオールスターズ
+負けないで|ZARD
+世界が終るまでは…|WANDS
+このまま君だけを奪い去りたい|DEEN
+YAH YAH YAH|CHAGE and ASKA
+浪漫飛行|米米CLUB
+春よ、来い|松任谷由実
+赤いスイートピー|松田聖子
+少女A|中森明菜
+オリビアを聴きながら|杏里
+RYDEEN|Yellow Magic Orchestra
+リンダリンダ|THE BLUE HEARTS
+ワインレッドの心|安全地帯
+淋しい熱帯魚|Wink
+Diamonds|PRINCESS PRINCESS
+Boys & Girls|浜崎あゆみ
+HELLO|福山雅治
+糸|中島みゆき
+ハナミズキ|一青窈
+大きな古時計|平井堅
+世界に一つだけの花|SMAP
+ありがとう|いきものがかり
+キセキ|GReeeeN
+手紙 ~拝啓 十五の君へ~|アンジェラ・アキ
+粉雪|レミオロメン
+千の風になって|秋川雅史
+小さな恋のうた|MONGOL800
+LOVE|ORANGE RANGE
+さくら|ケツメイシ
+Lovers Again|EXILE
+クリスマス・イブ|山下達郎
+空も飛べるはず|スピッツ
+シーソーゲーム 〜勇敢な恋の歌〜|Mr.Children
+誘惑|GLAY
+Driver's High|L'Arc~en~Ciel
+ultra soul|B'z
+Time Will Tell|宇多田ヒカル
+Don't wanna cry|安室奈美恵
+White Love|SPEED
+うれしい!たのしい!大好き!|DREAMS COME TRUE
+いとしのエリー|サザンオールスターズ
+揺れる想い|ZARD
+もっと強く抱きしめたなら|WANDS
+瞳そらさないで|DEEN
+SAY YES|CHAGE and ASKA
+卒業写真|松任谷由実
+青い珊瑚礁|松田聖子
+DESIRE -情熱-|中森明菜
+悲しみがとまらない|杏里
+TRAIN-TRAIN|THE BLUE HEARTS
+A Song for ××|浜崎あゆみ
+桜坂|福山雅治
+地上の星|中島みゆき
+3月9日|レミオロメン
+上海ハニー|ORANGE RANGE
+Choo Choo TRAIN|EXILE
+SPARKLE|山下達郎
+楓|スピッツ
+名もなき詩|Mr.Children
+BELOVED|GLAY
+flower|L'Arc~en~Ciel
+いつかのメリークリスマス|B'z
+Can You Keep A Secret?|宇多田ヒカル
+Chase the Chance|安室奈美恵
+Go! Go! Heaven|SPEED
+決戦は金曜日|DREAMS COME TRUE
+真夏の果実|サザンオールスターズ
+もう探さない|ZARD
+守ってあげたい|松任谷由実
+SWEET MEMORIES|松田聖子
+難破船|中森明菜
+Dearest|浜崎あゆみ
+時代|中島みゆき
+Pieces|ORANGE RANGE
+スカーレット|スピッツ
+Everything (It's you)|Mr.Children
+SOUL LOVE|GLAY
+Blurry Eyes|L'Arc~en~Ciel
+今夜月の見える丘に|B'z
+Wait & See 〜リスク〜|宇多田ヒカル
+SWEET 19 BLUES|安室奈美恵
+涙のキッス|サザンオールスターズ
+ルージュの伝言|松任谷由実
+空と君のあいだに|中島みゆき
+涙がキラリ☆|スピッツ
+終わりなき旅|Mr.Children
+Winter, again|GLAY
+traveling|宇多田ヒカル
+TSUNAMI|サザンオールスターズ
+魔法のコトバ|スピッツ
+CROSS ROAD|Mr.Children
+pure soul|GLAY
+Movin' on without you|宇多田ヒカル
+HANABI|Mr.Children
+SAKURAドロップス|宇多田ヒカル
+しるし|Mr.Children
+掌/くるみ|Mr.Children
+Sign|Mr.Children
+GIFT|Mr.Children

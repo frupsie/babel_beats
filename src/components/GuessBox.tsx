@@ -46,6 +46,14 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip, onGiveUp 
 
   const results = useMemo(() => searchSongs(index, query), [index, query]);
   const showList = open && results.length > 0;
+  // Arrow keys move through a list that scrolls: keep the highlighted song in view. (Moving the mouse over a song
+  // highlights it too, but it is already in view, and scrolling then would make the list jump under the pointer.)
+  const keyboardMoved = useRef(false);
+  useEffect(() => {
+    if (!keyboardMoved.current) return;
+    keyboardMoved.current = false;
+    document.getElementById(`${listId}-${active}`)?.scrollIntoView({ block: 'nearest' });
+  }, [active, listId]);
 
   const submit = (song: Song | null, typed: string) => {
     if (!song && !typed.trim()) return;
@@ -81,6 +89,7 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip, onGiveUp 
         const step = e.key === 'ArrowDown' ? 1 : -1;
         setOpen(true);
         setPicked(true);
+        keyboardMoved.current = true;
         setActive((a) => (a + step + results.length) % results.length);
         break;
       }
@@ -131,7 +140,13 @@ export function GuessBox({ index, disabled, skipGain, onGuess, onSkip, onGiveUp 
       </div>
 
       {showList && (
-        <ul id={listId} role="listbox" className="guess__list">
+        // Pressing the list's own scrollbar must not take focus from the box (that would close the list before it scrolled).
+        <ul id={listId} role="listbox" className="guess__list" onMouseDown={(e) => e.preventDefault()}>
+          {results.length > 8 && (
+            <li role="presentation" className="guess__count">
+              {results.length} songs · scroll for more
+            </li>
+          )}
           {results.map((song, i) => {
             const htmlLang = songHtmlLang(song);
             return (

@@ -216,7 +216,7 @@ describe('a round', () => {
     startListening(room, [a, b]);
     room.handle(a, { t: 'skip', no: 1 });
     room.handle(a, { t: 'giveUp', no: 1 });
-    expect(player(a).round).toMatchObject({ status: 'lost', tries: ['skip'], points: 0 });
+    expect(player(a).round).toMatchObject({ status: 'lost', tries: ['skip'], gaveUp: true, points: 0 });
     room.handle(a, { t: 'guess', no: 1, songId: answer(), text: '' }); // too late now
     expect(player(a).round.status).toBe('lost');
     expect(state().phase).toBe('playing'); // Ben is still guessing
@@ -251,7 +251,31 @@ describe('a round', () => {
     startListening(room, [a]);
     vi.advanceTimersByTime(ROUND_SECONDS * 1000);
     expect(state().phase).toBe('reveal');
-    expect(player(a).round.status).toBe('lost');
+    expect(player(a).round).toMatchObject({ status: 'lost', gaveUp: false }); // out of time is not the same as giving up
+  });
+
+  it('tells everyone how far each player has got, without saying what they guessed', () => {
+    const { room, join, player, answer } = setup();
+    const a = join('a', 'Ann');
+    const b = join('b', 'Ben');
+    room.handle(a, { t: 'start' });
+    startListening(room, [a, b]);
+    room.handle(a, { t: 'skip', no: 1 });
+    room.handle(a, { t: 'guess', no: 1, songId: '3', text: '' }); // a wrong song
+    expect(player(a).round).toMatchObject({ status: 'playing', tries: ['skip', 'wrong'], gaveUp: false });
+    expect(JSON.stringify(player(a).round)).not.toContain(answer());
+    expect(player(b).round).toMatchObject({ status: 'playing', tries: [] });
+  });
+
+  it('forgets a give-up when the next round starts', () => {
+    const { room, join, player } = setup();
+    const a = join('a', 'Ann');
+    room.handle(a, { t: 'start' });
+    startListening(room, [a]);
+    room.handle(a, { t: 'giveUp', no: 1 });
+    expect(player(a).round.gaveUp).toBe(true);
+    vi.advanceTimersByTime(REVEAL_MS); // round 2 begins
+    expect(player(a).round).toMatchObject({ status: 'waiting', gaveUp: false, tries: [] });
   });
 
   it('lets the host skip the reveal, and finishes after the last round', () => {

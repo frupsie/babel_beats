@@ -40,8 +40,11 @@ export async function readSongList(file) {
       continue;
     }
     if (!line.trim()) continue;
-    const [title, artists = ''] = line.split('|');
-    songs.push({ title: title.trim(), artists: artists.split(',').map((a) => a.trim()).filter(Boolean) });
+    // "title|artists", and optionally "|year" to give a release year Apple gets wrong (a compilation's later date).
+    const [title, artists = '', year = ''] = line.split('|');
+    const row = { title: title.trim(), artists: artists.split(',').map((a) => a.trim()).filter(Boolean) };
+    if (/^\s*\d{4}\s*$/.test(year)) row.year = Number(year);
+    songs.push(row);
   }
   meta.total = songs.length;
   return { meta, songs };

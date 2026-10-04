@@ -36,7 +36,7 @@ export function AboutDialog({ dialogRef }: Props) {
         <h3 className="kicker">Play with friends</h3>
         <p className="note">
           Start a room and share its code or invite link. Everyone hears the same clip at the same moment. Right answers score up to 1000
-          points: fewer tries and faster answers score more.
+          points: fewer tries and faster answers score more. Every round you finish also counts in your stats.
         </p>
 
         <h3 className="kicker">About</h3>

@@ -1,5 +1,5 @@
 # Spotify playlist "日本の歌" by jayden: https://open.spotify.com/playlist/6Bb0fLmdSvA3YmkhhVMvTc
-# Read from the public playlist page on 2026-09-21. It has 541 songs; 19 were set aside (15 duplicates and 4 covers,
+# Read from the public playlist page on 2026-10-04. It has 541 songs; 19 were set aside (15 duplicates and 4 covers,
 # remixes or live versions), leaving the 522 below.
 # lang: ja
 # One song per line: title|artists  (artists comma-separated, exactly as Spotify shows them)
@@ -19,7 +19,7 @@ Gurenge (From "Demon Slayer: Kimetsu no Yaiba")|Akano
 First Love|Hikaru Utada
 Ref:rain|Aimer
 Compared Child|TUYU
-好きだから。|Yuika
+17さいのうた。|Yuika
 心做し|Akane
 Akuma no Ko|Ai Higuchi
 オレンジ|7!!

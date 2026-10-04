@@ -1,4 +1,4 @@
-import type { LangCode } from '../data/languages.ts';
+import { LANG_CODES, type LangCode } from '../data/languages.ts';
 import type { Difficulty, Era, Pool, Song } from '../types.ts';
 
 /** iTunes previews are 30 seconds long. */
@@ -33,6 +33,24 @@ export function eraOf(year: number): Exclude<Era, 'any'> {
 
 export function inEra(era: Era, year: number): boolean {
   return era === 'any' || eraOf(year) === era;
+}
+
+/** Songs per language once the era is applied: what the language buttons show, and what switches a language off. */
+export function languageCounts(songs: readonly Song[], era: Era): Record<LangCode, number> {
+  const counts = Object.fromEntries(LANG_CODES.map((code) => [code, 0])) as Record<LangCode, number>;
+  for (const song of songs) if (inEra(era, song.year)) counts[song.lang] += 1;
+  return counts;
+}
+
+/** Songs per era once the languages are applied: what the era buttons show, and what greys one out. */
+export function eraCounts(songs: readonly Song[], langs: readonly LangCode[]): Record<Era, number> {
+  const counts: Record<Era, number> = { any: 0, classic: 0, '2000s': 0, '2010s': 0, '2020s': 0 };
+  for (const song of songs) {
+    if (!langs.includes(song.lang)) continue;
+    counts.any += 1;
+    counts[eraOf(song.year)] += 1;
+  }
+  return counts;
 }
 
 /** The part of Settings that decides which songs are eligible. */

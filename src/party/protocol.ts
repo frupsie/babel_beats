@@ -54,6 +54,8 @@ export interface PublicPlayer {
   round: {
     status: PlayerRoundStatus;
     tries: TryKind[];
+    /** True when the player ended the round themselves with "Give up"; false for running out of tries or time. */
+    gaveUp: boolean;
     points: number;
     /** Milliseconds from the start of the round to the right answer. */
     ms: number | null;

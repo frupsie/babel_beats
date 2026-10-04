@@ -10,7 +10,13 @@
  * Songs in another language, noise tracks, alternate versions and repeats are left out (see EXCLUDE below).
  * Then `npm run alltime` finds them on Apple and writes src/data/catalog.json.
  *
- *   node scripts/alltime/make-lists.mjs            downloads the charts (cached for a day in scripts/.cache/charts)
+ * It also writes scripts/alltime/extras-en.txt: the best-placed songs of Billboard's Year-End Hot 100 for the 2000s and
+ * the 2020s (en.wikipedia.org/wiki/Billboard_Year-End_Hot_100_singles_of_2005 and so on), which build-alltime.mjs uses
+ * to fill eras the all-time list leaves thin. The Mandarin and Japanese extras (extras-zh.txt, extras-ja.txt) are
+ * written by hand: no public chart covers their older hits.
+ *
+ *   node scripts/alltime/make-lists.mjs                 downloads the charts (cached for a day in scripts/.cache/charts)
+ *   node scripts/alltime/make-lists.mjs --extras-only   rewrites only extras-en.txt, leaving the three all-time lists alone
  */
 import { existsSync, statSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -23,6 +29,9 @@ const ROOT = path.resolve(HERE, '..', '..');
 const CACHE = path.join(ROOT, 'scripts', '.cache', 'charts');
 /** Rows written per language. More than the 100 kept, because some aren't on Apple or can't be verified. */
 const CANDIDATES = 140;
+/** Billboard Year-End Hot 100: the years whose hits fill the thin English eras, and how many songs per year. */
+const YEAR_END_YEARS = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2020, 2021, 2022, 2023, 2024, 2025];
+const YEAR_END_TOP = 12;
 
 const SOURCES = {
   spotifyAll: 'https://kworb.net/spotify/songs.html',
@@ -36,7 +45,7 @@ const SOURCES = {
 /** Left out on purpose, by "artist — title" (case-insensitive) or by artist alone. */
 const EXCLUDE = {
   en: {
-    reason: 'not sung in English, a noise track, or a remix of a song already listed',
+    reason: 'not sung in English, a noise track, a remix of a song already listed, or only on Apple as a live or session version',
     songs: [
       'Don Omar — Danza Kuduro',
       'J Balvin — LA CANCIÓN',
@@ -49,6 +58,7 @@ const EXCLUDE = {
       'The Weeknd — Save Your Tears (Remix)',
       'Los del Rio — Macarena (Bayside Boys Mix)',
       'Luis Fonsi & Daddy Yankee Featuring Justin Bieber — Despacito',
+      'Teddy Swims — Lose Control',
     ],
     artists: ['Bad Bunny', 'Karol G', 'Peso Pluma', 'Feid', 'Rauw Alejandro', 'Ozuna', 'Daddy Yankee', 'J Balvin', 'Myke Towers', 'Quevedo'],
   },
@@ -87,7 +97,13 @@ async function fetchText(name, url) {
   await mkdir(CACHE, { recursive: true });
   const file = path.join(CACHE, `${name}.html`);
   if (existsSync(file) && Date.now() - statSync(file).mtimeMs < 24 * 3600e3) return readFile(file, 'utf8');
-  const res = await fetch(url, { headers: { 'User-Agent': 'babel-beats (all-time list builder)' } });
+  // Politely: a pause before each download, and a longer wait if the site says "slow down" (HTTP 429).
+  let res;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await new Promise((r) => setTimeout(r, 700 + attempt * 3000));
+    res = await fetch(url, { headers: { 'User-Agent': 'babel-beats (all-time list builder)' } });
+    if (res.status !== 429) break;
+  }
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   const text = await res.text();
   await writeFile(file, text);
@@ -170,6 +186,19 @@ function parseWikiJapan(json) {
   return out.sort((a, b) => b.sales - a.sales);
 }
 
+/** One Year-End Hot 100 page: position, title and artists of the top rows. */
+function parseYearEnd(json, top) {
+  const html = JSON.parse(json).parse.text;
+  const out = [];
+  for (const r of html.split('<tr').slice(1)) {
+    const cells = [...r.matchAll(/<t[dh][^>]*>([\s\S]*?)(?=<t[dh]|<\/tr>)/g)].map((m) => decode(m[1]));
+    if (/^\d+$/.test(cells[0] ?? '') && Number(cells[0]) <= top && cells[1] && cells[2]) {
+      out.push({ rank: Number(cells[0]), title: cells[1].replace(/^"|"$/g, ''), artist: cells[2] });
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------- language filters and merging
 const HAN = /\p{Script=Han}/u;
 const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
@@ -239,21 +268,63 @@ function writeList(lang, name, sourcesNote, rows) {
 }
 
 // ---------------------------------------------------------------- main
-const [spotifyAllHtml, twHtml, jpHtml, billboardHtml, wikiJson] = await Promise.all([
-  fetchText('spotify-all', SOURCES.spotifyAll),
-  fetchText('spotify-tw', SOURCES.tw),
-  fetchText('spotify-jp', SOURCES.jp),
-  fetchText('billboard-goat', SOURCES.billboard),
-  fetchText('wiki-japan-singles', SOURCES.wikiJapan),
-]);
+// With --extras-only just the year-end extras are rewritten; the three all-time lists (and so the catalogue) stay as they are.
+const EXTRAS_ONLY = process.argv.includes('--extras-only');
+
+let spotifyAllHtml, twHtml, jpHtml, billboardHtml, wikiJson;
+if (!EXTRAS_ONLY) {
+  [spotifyAllHtml, twHtml, jpHtml, billboardHtml, wikiJson] = await Promise.all([
+    fetchText('spotify-all', SOURCES.spotifyAll),
+    fetchText('spotify-tw', SOURCES.tw),
+    fetchText('spotify-jp', SOURCES.jp),
+    fetchText('billboard-goat', SOURCES.billboard),
+    fetchText('wiki-japan-singles', SOURCES.wikiJapan),
+  ]);
+}
 
 const pick = (lang, rows) => rows.filter((r) => r.title && r.artist && KEEP[lang](r) && !excluded(lang, r));
 
-const en = interleave([pick('en', parseSpotifyAll(spotifyAllHtml)), pick('en', parseBillboard(billboardHtml))], CANDIDATES);
-const zh = interleave([pick('zh', parseCountryTotals(twHtml))], CANDIDATES);
-const ja = interleave([pick('ja', parseCountryTotals(jpHtml)), pick('ja', parseWikiJapan(wikiJson))], CANDIDATES);
+// The year-end hits, best first across all the years: every year's number 1, then every year's number 2, and so on.
+const yearEnd = new Map();
+for (const y of YEAR_END_YEARS) {
+  const url = `https://en.wikipedia.org/w/api.php?action=parse&page=Billboard_Year-End_Hot_100_singles_of_${y}&prop=text&format=json&formatversion=2`;
+  yearEnd.set(y, pick('en', parseYearEnd(await fetchText(`billboard-year-end-${y}`, url), YEAR_END_TOP)));
+}
+const yearEndRows = [];
+for (let rank = 1; rank <= YEAR_END_TOP; rank++) {
+  for (const rows of yearEnd.values()) {
+    const r = rows.find((x) => x.rank === rank);
+    if (r) yearEndRows.push(r);
+  }
+}
 
-await writeList('en', 'All Time (English)', "Spotify's all-time most-streamed songs (kworb.net) alternating with Billboard's Greatest of All Time Hot 100", en);
-await writeList('zh', 'All Time (Mandarin)', "all-time stream totals on Spotify's Taiwan daily chart (kworb.net)", zh);
-await writeList('ja', 'All Time (Japanese)', "all-time stream totals on Spotify's Japan daily chart (kworb.net) alternating with Japan's all-time best-selling singles (Oricon, via Wikipedia)", ja);
-console.log(`Wrote scripts/alltime/en.txt (${en.length}), zh.txt (${zh.length}), ja.txt (${ja.length})`);
+if (!EXTRAS_ONLY) {
+  const en = interleave([pick('en', parseSpotifyAll(spotifyAllHtml)), pick('en', parseBillboard(billboardHtml))], CANDIDATES);
+  const zh = interleave([pick('zh', parseCountryTotals(twHtml))], CANDIDATES);
+  const ja = interleave([pick('ja', parseCountryTotals(jpHtml)), pick('ja', parseWikiJapan(wikiJson))], CANDIDATES);
+
+  await writeList('en', 'All Time (English)', "Spotify's all-time most-streamed songs (kworb.net) alternating with Billboard's Greatest of All Time Hot 100", en);
+  await writeList('zh', 'All Time (Mandarin)', "all-time stream totals on Spotify's Taiwan daily chart (kworb.net)", zh);
+  await writeList('ja', 'All Time (Japanese)', "all-time stream totals on Spotify's Japan daily chart (kworb.net) alternating with Japan's all-time best-selling singles (Oricon, via Wikipedia)", ja);
+  console.log(`Wrote scripts/alltime/en.txt (${en.length}), zh.txt (${zh.length}), ja.txt (${ja.length})`);
+}
+
+// Year-end hits as the English extras (repeats of one song across years are dropped).
+const seenExtra = new Set();
+const extraRows = yearEndRows.filter((r) => {
+  const k = `${titleKey(stripDecor(r.title))}|${compact(splitCredit(r.artist)[0] ?? '')}`;
+  return !seenExtra.has(k) && seenExtra.add(k);
+});
+await writeFile(
+  path.join(HERE, 'extras-en.txt'),
+  [
+    '# name: All Time (English), extras',
+    '# lang: en',
+    `# Built by scripts/alltime/make-lists.mjs on ${new Date().toISOString().slice(0, 10)} from: the top ${YEAR_END_TOP} of Billboard's Year-End Hot 100 for ${YEAR_END_YEARS.join(', ')} (via Wikipedia), best first`,
+    '# Used by scripts/build-alltime.mjs only to fill eras (2000s, 2020s) that the all-time list leaves short.',
+    '# One song per line: title|artists',
+    // Billboard writes joint credits as "A and B"; the list format wants them separated.
+    ...extraRows.map((r) => `${r.title.replace(/\|/g, '/')}|${splitCredit(r.artist.replace(/\s+and\s+/gi, ' & ')).join(', ')}`),
+  ].join('\n') + '\n',
+);
+console.log(`Wrote scripts/alltime/extras-en.txt (${extraRows.length})`);

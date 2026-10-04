@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LANGUAGES, LANG_CODES, languageInfo, type LangCode } from './data/languages';
+import { LANG_CODES, languageInfo, type LangCode } from './data/languages';
 import { AboutDialog } from './components/AboutDialog';
 import { GuessBox } from './components/GuessBox';
 import { Ladder } from './components/Ladder';
@@ -20,8 +20,10 @@ import {
   FULL_PREVIEW_SECONDS,
   applyGuess,
   currentClip,
+  eraCounts,
   giveUp,
   ladderFor,
+  languageCounts,
   newRound,
   poolFor,
   skipGain,
@@ -97,6 +99,8 @@ export default function App() {
   const [loadProgress, setLoadProgress] = useState<number | null>(null);
   /** Whether the current song has been heard at all (until then the status line says "Tap to play"). */
   const [heard, setHeard] = useState(false);
+  /** The longer clip after a skip is about to start by itself; pressing the record meanwhile would play it twice. */
+  const [autoPending, setAutoPending] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   // "Play with friends": a party room instead of the solo game. A shared room link (?room=CODE) opens it directly.
   const [mode, setMode] = useState<'solo' | 'party'>(() => (roomFromUrl() ? 'party' : 'solo'));
@@ -113,12 +117,13 @@ export default function App() {
   /** Set by the party view while it is open: leaves the room (after asking, if in one) and returns to solo play. */
   const leavePartyRef = useRef<(() => void) | null>(null);
 
-  // Songs per language in the list being played; a language with none can't be switched on.
-  const counts = useMemo(() => {
-    const c = Object.fromEntries(LANGUAGES.map((l) => [l.code, 0])) as Record<LangCode, number>;
-    for (const s of poolSongs(settings.pool)) c[s.lang] += 1;
-    return c;
-  }, [settings.pool]);
+  // Songs per language in the list and era being played (a language with none can't be switched on), and songs per era for
+  // the languages switched on (an era with none is greyed out). The chart ignores both filters.
+  const counts = useMemo(
+    () => languageCounts(poolSongs(settings.pool), settings.pool === 'sg-now' ? 'any' : settings.era),
+    [settings.pool, settings.era],
+  );
+  const eraSongs = useMemo(() => eraCounts(poolSongs(settings.pool), settings.langs), [settings.pool, settings.langs]);
   const poolSize = useMemo(
     () => (settings.pool === 'sg-now' ? SG.pool.length : poolFor(poolSongs(settings.pool), settings).length),
     [settings],
@@ -128,6 +133,7 @@ export default function App() {
   const cancelAutoplay = () => {
     if (autoplayRef.current) clearTimeout(autoplayRef.current);
     autoplayRef.current = null;
+    setAutoPending(false);
   };
 
   const playClip = useCallback((buffer: AudioBuffer, seconds: number) => {
@@ -147,6 +153,7 @@ export default function App() {
 
     if (autoplayRef.current) clearTimeout(autoplayRef.current);
     autoplayRef.current = null;
+    setAutoPending(false);
     engine.stop();
     setPlaying(null);
     setPhase('loading');
@@ -214,7 +221,7 @@ export default function App() {
 
   const togglePlay = () => {
     const buffer = bufferRef.current;
-    if (!round || !buffer) return;
+    if (!round || !buffer || autoPending) return;
     cancelAutoplay();
     if (playing) {
       engine.stop();
@@ -225,12 +232,19 @@ export default function App() {
   };
 
   // ---------------------------------------------------------------- guessing
+  // Solo rounds and party rounds both end up here. The ref keeps two results in quick succession from overwriting each other.
+  const statsRef = useRef(stats);
+  const addResult = useCallback((lang: LangCode | null, won: boolean) => {
+    const updated = recordResult(statsRef.current, lang, won);
+    statsRef.current = updated;
+    setStats(updated);
+    saveStats(updated);
+  }, []);
+
   const conclude = (next: RoundState) => {
     if (next.status === 'playing') return;
     // Chart songs have no curated language, so they only count toward the totals and the streak.
-    const updated = recordResult(stats, next.pool === 'sg-now' ? null : next.song.lang, next.status === 'won');
-    setStats(updated);
-    saveStats(updated);
+    addResult(next.pool === 'sg-now' ? null : next.song.lang, next.status === 'won');
   };
 
   const commit = (current: RoundState, entry: GuessEntry) => {
@@ -245,8 +259,10 @@ export default function App() {
     // skip again or give up instead.
     const buffer = bufferRef.current;
     if (entry.kind === 'skip' && next.status === 'playing' && buffer) {
+      setAutoPending(true);
       autoplayRef.current = setTimeout(() => {
         autoplayRef.current = null;
+        setAutoPending(false);
         playClip(buffer, currentClip(next));
       }, AUTOPLAY_AFTER_SKIP_MS);
     }
@@ -312,10 +328,13 @@ export default function App() {
   const finished = round !== null && round.status !== 'playing';
   const clip = round ? currentClip(round) : 0;
   const ladder = ladderFor(settings.difficulty);
-  const vinylLabel = phase === 'loading' ? 'Tuning' : finished ? `${FULL_PREVIEW_SECONDS}s` : fmtSeconds(clip);
-  const vinylAria = finished
-    ? playing ? 'Stop the preview' : 'Play the 30 second preview'
-    : playing ? 'Stop the clip' : `Play a ${fmtSeconds(clip)} clip`;
+  // After a skip, the record says "Loading" for the second before the longer clip starts by itself.
+  const vinylLabel = phase === 'loading' ? 'Tuning' : autoPending ? 'Loading' : finished ? `${FULL_PREVIEW_SECONDS}s` : fmtSeconds(clip);
+  const vinylAria = autoPending
+    ? 'Loading the next clip'
+    : finished
+      ? playing ? 'Stop the preview' : 'Play the 30 second preview'
+      : playing ? 'Stop the clip' : `Play a ${fmtSeconds(clip)} clip`;
   // The language hint only makes sense for the curated mix; a chart song's language isn't known.
   const showHint = round?.status === 'playing' && round.pool !== 'sg-now' && settings.langs.length > 1 && round.guesses.length >= 2;
   const difficultyNote = ladder.map((n) => fmtSeconds(n)).join(' → ');
@@ -368,7 +387,14 @@ export default function App() {
       </header>
 
       {mode === 'party' ? (
-        <PartyView soloSettings={settings} audio={audio} onAudioChange={setAudio} onExit={() => setMode('solo')} leaveRef={leavePartyRef} />
+        <PartyView
+          soloSettings={settings}
+          audio={audio}
+          onAudioChange={setAudio}
+          onExit={() => setMode('solo')}
+          onResult={addResult}
+          leaveRef={leavePartyRef}
+        />
       ) : (
         <main className="board">
           {/* On phones the two halves of the setup sit either side of the game: languages, game, then the rest. */}
@@ -424,7 +450,13 @@ export default function App() {
                 number="03"
                 legend="Era"
                 value={settings.era}
-                options={ERAS.map((e) => ({ id: e.id, label: e.label, title: e.title }))}
+                options={ERAS.map((e) => ({
+                  id: e.id,
+                  label: e.label,
+                  title: e.title,
+                  count: sgMode ? undefined : eraSongs[e.id],
+                  disabled: !sgMode && eraSongs[e.id] === 0 && e.id !== settings.era,
+                }))}
                 onChange={setEra}
                 disabled={sgMode}
               />
@@ -471,12 +503,12 @@ export default function App() {
             {(phase === 'loading' || phase === 'ready') && (
               <div className="play">
                 <Vinyl
-                  loading={phase === 'loading'}
+                  loading={phase === 'loading' || autoPending}
                   playing={playing}
                   label={vinylLabel}
                   ariaLabel={vinylAria}
                   art={finished ? art : null}
-                  disabled={phase !== 'ready'}
+                  disabled={phase !== 'ready' || autoPending}
                   onToggle={togglePlay}
                   progress={loadProgress}
                 />
@@ -571,6 +603,7 @@ export default function App() {
         stats={stats}
         onReset={() => {
           const fresh = emptyStats();
+          statsRef.current = fresh;
           setStats(fresh);
           saveStats(fresh);
         }}

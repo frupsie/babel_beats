@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Song } from '../types';
-import { buildListPool, matchesSong, type ListEntry } from './lists';
+import { buildListPool, matchesSong, withListCredits, type ListEntry } from './lists';
+import { indexSongs, searchSongs } from './match';
 
 function song(over: Partial<Song> & Pick<Song, 'id' | 'lang' | 'title' | 'artist'>): Song {
   return {
@@ -26,6 +27,31 @@ const sunny = song({
 });
 const lemon = song({ id: 'c2', lang: 'ja', title: 'Lemon', artist: '米津玄師', artistAlt: ['Kenshi Yonezu'] });
 const en = song({ id: 'c3', lang: 'ja', title: 'Tune', artist: 'EN' });
+
+describe('withListCredits', () => {
+  const coral = song({ id: 'c9', lang: 'zh', title: '珊瑚海', artist: '周杰倫', artistAlt: ['Jay Chou', '周杰伦'] });
+  const entry = (artist: string, catalogId?: string): ListEntry => ({ rank: 1, catalogId, song: song({ id: 'p9', lang: 'zh', title: '珊瑚海', artist }) });
+
+  it('adds an artist that a list credits on the song and the catalogue lacks', () => {
+    const [fuller, untouched] = withListCredits([coral, sunny], [entry('Jay Chou, Lara Liang', 'c9')]);
+    expect(fuller).toMatchObject({ id: 'c9', artist: '周杰倫, Lara Liang' });
+    expect(untouched).toBe(sunny);
+  });
+
+  it('adds nothing when every artist is already credited, in any spelling', () => {
+    expect(withListCredits([coral], [entry('Jay Chou', 'c9')])[0]).toBe(coral);
+    expect(withListCredits([coral], [entry('周杰伦, Jay Chou', 'c9')])[0]).toBe(coral);
+  });
+
+  it('ignores list songs that are not in the catalogue', () => {
+    expect(withListCredits([coral], [entry('Jay Chou, Lara Liang')])[0]).toBe(coral);
+  });
+
+  it('makes the featured artist searchable in the guess box', () => {
+    const songs = withListCredits([coral], [entry('Jay Chou, Lara Liang', 'c9')]);
+    expect(searchSongs(indexSongs(songs), 'lara liang').map((s) => s.id)).toEqual(['c9']);
+  });
+});
 
 describe('matchesSong', () => {
   it('matches by id alone', () => {

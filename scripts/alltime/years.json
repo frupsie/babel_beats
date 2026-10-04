@@ -1,0 +1,8 @@
+{
+  "_about": "Release years to use instead of Apple's, for songs where Apple's date is a later compilation or a placeholder (1 January). Key: 'title|first artist' exactly as in the list file; the value is the year the song first came out. Used by scripts/build-alltime.mjs; a year given on a line of an extras file ('title|artists|1981') does the same.",
+  "Bette Davis Eyes|Kim Carnes": 1981,
+  "Too Close|Next": 1997,
+  "The Battle Of New Orleans|Johnny Horton": 1959,
+  "Creep|Radiohead": 1992,
+  "上を向いて歩こう|坂本九": 1961
+}

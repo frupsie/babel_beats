@@ -3,7 +3,7 @@
 // erasable TypeScript and give relative imports their `.ts` extension.
 import type { Pool, Settings, Song } from '../types.ts';
 import { pickFromList, pickSong } from './game.ts';
-import { buildListPool, type ListPool, type PlaylistInfo, type PlaylistsFile } from './lists.ts';
+import { buildListPool, withListCredits, type ListPool, type PlaylistInfo, type PlaylistsFile } from './lists.ts';
 import { buildSgPool, type SgSnapshot } from './sgNow.ts';
 
 export interface SongPools {
@@ -18,8 +18,10 @@ export interface SongPools {
   all: readonly Song[];
 }
 
-export function buildPools(catalog: readonly Song[], playlistsFile: PlaylistsFile, sgSnapshot: SgSnapshot | null): SongPools {
+export function buildPools(catalogSongs: readonly Song[], playlistsFile: PlaylistsFile, sgSnapshot: SgSnapshot | null): SongPools {
   const playlists = playlistsFile.lists;
+  // A song in several lists can be credited more fully in one of them; the catalogue's copy gets the extra artists.
+  const catalog = withListCredits(catalogSongs, [...playlists.flatMap((l) => l.entries), ...(sgSnapshot?.entries ?? [])]);
   const mine = buildListPool(
     playlists.flatMap((l) => l.entries),
     catalog,

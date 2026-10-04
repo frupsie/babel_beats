@@ -1,0 +1,188 @@
+# name: All Time (English), extras
+# lang: en
+# Built by scripts/alltime/make-lists.mjs on 2026-10-04 from: the top 12 of Billboard's Year-End Hot 100 for 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2020, 2021, 2022, 2023, 2024, 2025 (via Wikipedia), best first
+# Used by scripts/build-alltime.mjs only to fill eras (2000s, 2020s) that the all-time list leaves short.
+# One song per line: title|artists
+Breathe|Faith Hill
+Hanging by a Moment|Lifehouse
+How You Remind Me|Nickelback
+In da Club|50 Cent
+Yeah!|Usher, Lil Jon, Ludacris
+We Belong Together|Mariah Carey
+Bad Day|Daniel Powter
+Irreplaceable|Beyoncé
+Low|Flo Rida, T-Pain
+Boom Boom Pow|The Black Eyed Peas
+Blinding Lights|The Weeknd
+Levitating|Dua Lipa
+Heat Waves|Glass Animals
+Last Night|Morgan Wallen
+Die with a Smile|Lady Gaga, Bruno Mars
+Smooth|Santana, Rob Thomas
+Fallin'|Alicia Keys
+Foolish|Ashanti
+Ignition (Remix)|R. Kelly
+Burn|Usher
+Hollaback Girl|Gwen Stefani
+Temperature|Sean Paul
+Umbrella|Rihanna, Jay-Z
+Bleeding Love|Leona Lewis
+Poker Face|Lady Gaga
+Circles|Post Malone
+Save Your Tears|The Weeknd, Ariana Grande
+As It Was|Harry Styles
+Flowers|Miley Cyrus
+A Bar Song (Tipsy)|Shaboozey
+Luther|Kendrick Lamar, SZA
+Maria Maria|Santana, The Product G&B
+All for You|Janet
+Hot in Herre|Nelly
+Get Busy|Sean Paul
+If I Ain't Got You|Alicia Keys
+Let Me Love You|Mario
+Promiscuous|Nelly Furtado, Timbaland
+The Sweet Escape|Gwen Stefani, Akon
+No One|Alicia Keys
+Just Dance|Lady Gaga, Colby O'Donis
+The Box|Roddy Ricch
+Stay|The Kid Laroi, Justin Bieber
+Kill Bill|SZA
+Beautiful Things|Benson Boone
+I Wanna Know|Joe
+Drops of Jupiter (Tell Me)|Train
+Dilemma|Nelly, Kelly Rowland
+Crazy in Love|Beyoncé, Jay-Z
+This Love|Maroon 5
+Since U Been Gone|Kelly Clarkson
+You're Beautiful|James Blunt
+Big Girls Don't Cry|Fergie
+Lollipop|Lil Wayne, Static Major
+I Gotta Feeling|The Black Eyed Peas
+Don't Start Now|Dua Lipa
+Mood|24kGoldn, Iann Dior
+Easy on Me|Adele
+Anti-Hero|Taylor Swift
+I Had Some Help|Post Malone, Morgan Wallen
+Everything You Want|Vertical Horizon
+I'm Real (Murder Remix)|Jennifer Lopez, Ja Rule
+Wherever You Will Go|The Calling
+When I'm Gone|3 Doors Down
+The Way You Move|OutKast, Sleepy Brown
+1, 2 Step|Ciara, Missy Elliott
+Hips Don't Lie|Shakira, Wyclef Jean
+Buy U a Drank (Shawty Snappin')|T-Pain, Yung Joc
+Apologize|OneRepublic
+Love Story|Taylor Swift
+Rockstar|DaBaby, Roddy Ricch
+Good 4 U|Olivia Rodrigo
+Shivers|Ed Sheeran
+Creepin'|Metro Boomin, the Weeknd, 21 Savage
+Lovin on Me|Jack Harlow
+Birds of a Feather|Billie Eilish
+Say My Name|Destiny's Child
+If You're Gone|Matchbox Twenty
+A Thousand Miles|Vanessa Carlton
+Unwell|Matchbox Twenty
+The Reason|Hoobastank
+Gold Digger|Kanye West, Jamie Foxx
+Unwritten|Natasha Bedingfield
+Before He Cheats|Carrie Underwood
+No Air|Jordin Sparks, Chris Brown
+Right Round|Flo Rida
+Adore You|Harry Styles
+Kiss Me More|Doja Cat, SZA
+First Class|Jack Harlow
+Calm Down|Rema, Selena Gomez
+Not Like Us|Kendrick Lamar
+I Knew I Loved You|Savage Garden
+Let Me Blow Ya Mind|Eve, Gwen Stefani
+In the End|Linkin Park
+Right Thurr|Chingy
+I Don't Wanna Know|Mario Winans, Enya, P. Diddy
+Boulevard of Broken Dreams|Green Day
+Crazy|Gnarls Barkley
+Hey There Delilah|Plain White T's
+Love Song|Sara Bareilles
+I'm Yours|Jason Mraz
+Life Is Good|Future, Drake
+Leave the Door Open|Silk Sonic (Bruno Mars, Anderson .Paak)
+Big Energy|Latto
+Die for You|The Weeknd, Ariana Grande
+Espresso|Sabrina Carpenter
+Ordinary|Alex Warren
+Amazed|Lonestar
+Thank You|Dido
+What's Luv?|Fat Joe, Ashanti
+Miss You|Aaliyah
+Hey Ya!|OutKast
+Candy Shop|50 Cent, Olivia
+Ridin'|Chamillionaire, Krayzie Bone
+I Wanna Love You|Akon, Snoop Dogg
+Love in This Club|Usher, Young Jeezy
+Single Ladies (Put a Ring on It)|Beyoncé
+Memories|Maroon 5
+Drivers License|Olivia Rodrigo
+Ghost|Justin Bieber
+Fast Car|Luke Combs
+Million Dollar Baby|Tommy Richman
+Bent|Matchbox Twenty
+Again|Lenny Kravitz
+U Got It Bad|Usher
+Picture|Kid Rock, Sheryl Crow
+Goodies|Ciara, Petey Pablo
+Don't Cha|The Pussycat Dolls, Busta Rhymes
+SexyBack|Justin Timberlake, Timbaland
+Say It Right|Nelly Furtado
+With You|Chris Brown
+Heartless|Kanye West
+The Bones|Maren Morris
+Montero (Call Me by Your Name)|Lil Nas X
+Super Gremlin|Kodak Black
+Snooze|SZA
+I Remember Everything|Zach Bryan, Kacey Musgraves
+APT.|Rosé, Bruno Mars
+He Wasn't Man Enough|Toni Braxton
+Independent Women Part I|Destiny's Child
+Blurry|Puddle of Mudd
+Bring Me to Life|Evanescence, Paul McCoy
+Lean Back|Terror Squad, Fat Joe, Remy Ma
+Behind These Hazel Eyes|Kelly Clarkson
+Check on It|Beyoncé, Slim Thug, Bun B
+Glamorous|Fergie, Ludacris
+Gives You Hell|The All-American Rejects
+Someone You Loved|Lewis Capaldi
+Peaches|Justin Bieber, Daniel Caesar, Giveon
+Cold Heart (Pnau Remix)|Elton John, Dua Lipa
+I'm Good (Blue)|David Guetta, Bebe Rexha
+Too Sweet|Hozier
+Pink Pony Club|Chappell Roan
+Higher|Creed
+Hit 'Em Up Style (Oops!)|Blu Cantrell
+Complicated|Avril Lavigne
+Get Low|Lil Jon, The East Side Boyz, Ying Yang Twins
+Tipsy|J-Kwon
+Disco Inferno|50 Cent
+Be Without You|Mary J. Blige
+Don't Matter|Akon
+Sexy Can I|Ray J, Yung Berg
+You Belong with Me|Taylor Swift
+Say So|Doja Cat
+Butter|BTS
+Wait for U|Future, Drake, Tems
+Unholy|Sam Smith, Kim Petras
+Stick Season|Noah Kahan
+Love Somebody|Morgan Wallen
+Try Again|Aaliyah
+It Wasn't Me|Shaggy, Rikrok
+Always on Time|Ja Rule, Ashanti
+Baby Boy|Beyoncé, Sean Paul
+Confessions Part II|Usher
+You and Me|Lifehouse
+Grillz|Nelly, Paul Wall, Ali, Gipp
+Girlfriend|Avril Lavigne
+Take a Bow|Rihanna
+Dead and Gone|T.I., Justin Timberlake
+I Hope|Gabby Barrett, Charlie Puth
+About Damn Time|Lizzo
+You Proof|Morgan Wallen
+Cruel Summer|Taylor Swift

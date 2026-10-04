@@ -2,6 +2,10 @@ interface Option<T extends string> {
   id: T;
   label: string;
   title?: string;
+  /** Shown beside the label, e.g. how many songs that choice leaves in play. */
+  count?: number;
+  /** Greyed out and not selectable (an era with no songs for the languages chosen, say). */
+  disabled?: boolean;
 }
 
 interface Props<T extends string> {
@@ -27,8 +31,11 @@ export function Segmented<T extends string>({ name, legend, number, value, optio
       <div className="seg__row">
         {options.map((o) => (
           <label key={o.id} className="seg__opt" title={o.title}>
-            <input type="radio" name={name} value={o.id} checked={o.id === value} onChange={() => onChange(o.id)} />
-            <span>{o.label}</span>
+            <input type="radio" name={name} value={o.id} checked={o.id === value} disabled={o.disabled} onChange={() => onChange(o.id)} />
+            <span>
+              {o.label}
+              {o.count !== undefined && <small className="seg__n">{o.count}</small>}
+            </span>
           </label>
         ))}
       </div>

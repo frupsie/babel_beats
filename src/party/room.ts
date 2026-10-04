@@ -36,6 +36,8 @@ interface PlayerRec {
   score: number;
   status: PlayerRoundStatus;
   tries: TryKind[];
+  /** Ended this round on purpose (the player's own choice), as opposed to running out of tries or time. */
+  gaveUp: boolean;
   points: number;
   ms: number | null;
 }
@@ -111,7 +113,7 @@ export class Room {
     const id = `p${this.nextPlayerNo++}`;
     // Someone arriving mid-round sits that round out, unless the previews are still downloading.
     const status: PlayerRoundStatus = this.phase === 'loading' ? 'waiting' : 'out';
-    this.players.set(id, { id, secret, name, connected: true, score: 0, status, tries: [], points: 0, ms: null });
+    this.players.set(id, { id, secret, name, connected: true, score: 0, status, tries: [], gaveUp: false, points: 0, ms: null });
     this.hostId ??= id;
     this.afterConnectChange();
     return { ok: true, playerId: id };
@@ -249,6 +251,7 @@ export class Room {
     for (const p of this.players.values()) {
       p.status = p.connected ? 'waiting' : 'out';
       p.tries = [];
+      p.gaveUp = false;
       p.points = 0;
       p.ms = null;
     }
@@ -318,6 +321,7 @@ export class Room {
     if (this.phase !== 'playing' || !round || round.no !== no || p.status !== 'playing') return;
     if (round.goAt === null || this.now() < round.goAt) return;
     p.status = 'lost';
+    p.gaveUp = true;
     this.maybeEndRound();
     this.broadcast();
   }
@@ -382,7 +386,7 @@ export class Room {
       host: p.id === this.hostId,
       connected: p.connected,
       score: p.score,
-      round: { status: p.status, tries: [...p.tries], points: p.points, ms: p.ms },
+      round: { status: p.status, tries: [...p.tries], gaveUp: p.gaveUp, points: p.points, ms: p.ms },
     }));
     return {
       code: this.code,

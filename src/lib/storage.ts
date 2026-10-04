@@ -85,6 +85,24 @@ export function loadStats(): Stats {
   return { played: num(raw.played), won: num(raw.won), streak: num(raw.streak), best: num(raw.best), byLang };
 }
 
+const COUNTED_KEY = 'babel-beats:party-counted';
+const COUNTED_KEEP = 60;
+
+/**
+ * Says whether a party round's result has not been counted in the stats yet, and marks it counted. Kept for this tab
+ * (sessionStorage), so a reload or a dropped connection that brings the same finished round back is not counted twice.
+ */
+export function claimPartyResult(key: string): boolean {
+  try {
+    const seen = (JSON.parse(sessionStorage.getItem(COUNTED_KEY) ?? '[]') as unknown[]).filter((k): k is string => typeof k === 'string');
+    if (seen.includes(key)) return false;
+    sessionStorage.setItem(COUNTED_KEY, JSON.stringify([...seen, key].slice(-COUNTED_KEEP)));
+  } catch {
+    // storage blocked: count it (a reload could then count a round twice, which is better than never counting)
+  }
+  return true;
+}
+
 export function saveStats(stats: Stats): void {
   write(STATS_KEY, stats);
 }

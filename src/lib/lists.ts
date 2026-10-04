@@ -2,6 +2,7 @@
 // chart and your own playlists. Pure functions; scripts/*.mjs run this file directly under Node, so keep it to
 // erasable TypeScript (no enums or namespaces).
 import type { LangCode, Song } from '../types.ts';
+import { creditsOf } from './match.ts';
 import { compact, titleKey } from './text.ts';
 
 /** One position in a list. `song` is always complete; `catalogId` marks it as a song already in the All Time catalogue. */
@@ -55,6 +56,36 @@ export function matchesSong(candidate: Candidate, c: Song): boolean {
   const theirs = candidate.artists.map(compact).filter((f) => f.length >= 2);
   const ours = [c.artist, ...c.artistAlt].map(compact).filter((f) => f.length >= 2);
   return theirs.some((a) => ours.some((f) => a === f || (a.length >= 3 && f.length >= 3 && (a.includes(f) || f.includes(a)))));
+}
+
+/**
+ * The same catalogue with every artist added that a list credits on one of its songs and the catalogue's own credit
+ * lacks: All Time has "Jay Chou" for a song that your playlist lists as "Jay Chou, Lara Liang". The song is the same
+ * (same id); only its credit is fuller, so the guess box finds it by either artist and the answer card names both.
+ */
+export function withListCredits(catalog: readonly Song[], entries: readonly ListEntry[]): Song[] {
+  const byId = new Map(catalog.map((s) => [s.id, s] as const));
+  const added = new Map<string, Map<string, string>>(); // catalogue id -> folded name -> name as written
+  for (const entry of entries) {
+    const own = entry.catalogId ? byId.get(entry.catalogId) : undefined;
+    if (!own) continue;
+    const spellings = [own.artist, ...own.artistAlt];
+    const known = new Set(spellings.flatMap(creditsOf).map(compact));
+    const whole = spellings.map(compact);
+    for (const name of creditsOf(entry.song.artist)) {
+      const key = compact(name);
+      // Already credited, in any spelling (or inside a longer credit that names it): nothing to add.
+      if (!key || known.has(key) || whole.some((w) => w.includes(key))) continue;
+      const names = added.get(own.id) ?? new Map<string, string>();
+      names.set(key, name);
+      added.set(own.id, names);
+    }
+  }
+  if (added.size === 0) return [...catalog];
+  return catalog.map((s) => {
+    const names = added.get(s.id);
+    return names ? { ...s, artist: [s.artist, ...names.values()].join(', ') } : s;
+  });
 }
 
 export function buildListPool(entries: readonly ListEntry[], catalog: readonly Song[]): ListPool {

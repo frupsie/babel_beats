@@ -34,8 +34,9 @@ export function LanguagePicker({ selected, counts, onChange, disabled = false }:
             className="stamp"
             style={{ ...langStyle(lang.code), '--i': i } as CSSProperties}
             aria-pressed={on}
-            // A language with no songs in the list being played (English, in a Chinese + Japanese playlist) can't be switched on.
-            disabled={disabled || counts[lang.code] === 0}
+            // A language with no songs for the list and era being played (English, in a Chinese + Japanese playlist) can't be
+            // switched on; one that is already on can still be switched off.
+            disabled={disabled || (counts[lang.code] === 0 && !on)}
             aria-disabled={isLast || undefined}
             title={isLast ? 'Keep at least one language switched on' : undefined}
             onClick={() => toggle(lang.code)}

@@ -1,5 +1,34 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { emptyStats, loadSettings, recordResult } from './storage';
+import { claimPartyResult, emptyStats, loadSettings, recordResult } from './storage';
+
+describe('claimPartyResult', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const fakeSession = () => {
+    const data = new Map<string, string>();
+    vi.stubGlobal('sessionStorage', { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v) });
+  };
+
+  it('lets each round count once, even when the same finished round comes back', () => {
+    fakeSession();
+    expect(claimPartyResult('ABCD:1:1000')).toBe(true);
+    expect(claimPartyResult('ABCD:1:1000')).toBe(false); // a reload or reconnect shows the same finished round
+    expect(claimPartyResult('ABCD:2:5000')).toBe(true); // the next round is a new result
+    expect(claimPartyResult('ABCD:1:9000')).toBe(true); // round 1 of a second game in the same room
+  });
+
+  it('still counts a round when storage is blocked', () => {
+    vi.stubGlobal('sessionStorage', {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+    });
+    expect(claimPartyResult('ABCD:1:1000')).toBe(true);
+  });
+});
 
 describe('loadSettings', () => {
   const withSaved = (value: unknown) =>

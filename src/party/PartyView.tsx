@@ -19,6 +19,8 @@ import {
   ERAS,
   FULL_PREVIEW_SECONDS,
   currentClip,
+  eraCounts,
+  languageCounts,
   poolFor,
   skipGain,
   type GuessEntry,
@@ -44,7 +46,9 @@ import {
   type PublicPlayer,
   type RoomState,
 } from './protocol';
+import { pipStates, progressLabel, type PipState } from './progress';
 import { roomFromUrl, roomLink, savedName, sessionName, useParty, type Party } from './useParty';
+import { claimPartyResult } from '../lib/storage';
 
 interface Props {
   /** The solo settings, used as the starting point for a new room. */
@@ -52,11 +56,13 @@ interface Props {
   audio: AudioPrefs;
   onAudioChange: (prefs: AudioPrefs) => void;
   onExit: () => void;
+  /** Called once for each party round this player finishes, so it counts in their stats like a solo round. */
+  onResult: (lang: LangCode | null, won: boolean) => void;
   /** Filled in while this view is open, so the page's title can take the player home the same way "Leave" does. */
   leaveRef: MutableRefObject<(() => void) | null>;
 }
 
-export function PartyView({ soloSettings, audio, onAudioChange, onExit, leaveRef }: Props) {
+export function PartyView({ soloSettings, audio, onAudioChange, onExit, onResult, leaveRef }: Props) {
   const party = useParty();
   const { state, you } = party;
   const me = state?.players.find((p) => p.id === you) ?? null;
@@ -93,7 +99,7 @@ export function PartyView({ soloSettings, audio, onAudioChange, onExit, leaveRef
         ) : state.phase === 'final' ? (
           <Final state={state} me={me} party={party} />
         ) : (
-          <PartyRound state={state} me={me} party={party} audio={audio} onAudioChange={onAudioChange} />
+          <PartyRound state={state} me={me} party={party} audio={audio} onAudioChange={onAudioChange} onResult={onResult} />
         )}
       </section>
     </main>
@@ -269,10 +275,29 @@ const STATUS_WORD: Record<PublicPlayer['round']['status'], string> = {
   lost: 'missed it',
 };
 
+const PIP_MARK: Record<PipState, string> = { skip: '»', wrong: '✕', right: '✓', current: '', future: '', gone: '' };
+
+/** A player's attempts as small squares (skipped, wrong, right, the one they are on) with where they are in words. */
+function PlayerProgress({ round, attempts }: { round: PublicPlayer['round']; attempts: number }) {
+  return (
+    <span className="progress">
+      <span className="progress__pips" aria-hidden="true">
+        {pipStates(round, attempts).map((s, i) => (
+          <i key={i} className={cx('pip', `is-${s}`)}>
+            {PIP_MARK[s]}
+          </i>
+        ))}
+      </span>
+      <span className={cx('progress__label', `is-${round.status}`)}>{progressLabel(round, attempts)}</span>
+    </span>
+  );
+}
+
 function Scoreboard({ state, you }: { state: RoomState; you: string }) {
   const inGame = state.phase !== 'lobby';
   const players = inGame ? [...state.players].sort((a, b) => b.score - a.score) : state.players;
   const showRound = state.phase === 'loading' || state.phase === 'playing' || state.phase === 'reveal';
+  const attempts = state.round?.ladder.length ?? 0;
 
   return (
     <div className="scoreboard">
@@ -289,10 +314,13 @@ function Scoreboard({ state, you }: { state: RoomState; you: string }) {
                 <span className="sr-only">{STATUS_WORD[p.round.status]}</span>
               </span>
             )}
-            <span className="scoreboard__name">
-              {p.name}
-              {p.host && <span className="scoreboard__host" title="Host"> ★</span>}
-              {!p.connected && <span className="scoreboard__away"> (away)</span>}
+            <span className="scoreboard__who">
+              <span className="scoreboard__name">
+                {p.name}
+                {p.host && <span className="scoreboard__host" title="Host"> ★</span>}
+                {!p.connected && <span className="scoreboard__away"> (away)</span>}
+              </span>
+              {showRound && attempts > 0 && <PlayerProgress round={p.round} attempts={attempts} />}
             </span>
             {state.phase === 'reveal' && p.round.points > 0 && <span className="scoreboard__gain">+{p.round.points}</span>}
             {inGame && <span className="scoreboard__score">{p.score}</span>}
@@ -309,11 +337,9 @@ function Scoreboard({ state, you }: { state: RoomState; you: string }) {
 function Lobby({ state, me, party }: { state: RoomState; me: PublicPlayer; party: Party }) {
   const s = state.settings;
   const update = (patch: Partial<PartySettings>) => party.send({ t: 'settings', settings: { ...s, ...patch } });
-  const counts = useMemo(() => {
-    const c = Object.fromEntries(LANGUAGES.map((l) => [l.code, 0])) as Record<LangCode, number>;
-    for (const song of poolSongs(POOLS, s.pool)) c[song.lang] += 1;
-    return c;
-  }, [s.pool]);
+  const sg = s.pool === 'sg-now';
+  const counts = useMemo(() => languageCounts(poolSongs(POOLS, s.pool), s.pool === 'sg-now' ? 'any' : s.era), [s.pool, s.era]);
+  const eraSongs = useMemo(() => eraCounts(poolSongs(POOLS, s.pool), s.langs), [s.pool, s.langs]);
   const eligible = s.pool === 'sg-now' ? POOLS.sg.pool.length : poolFor(poolSongs(POOLS, s.pool), s).length;
   const others = state.players.length - 1;
 
@@ -360,7 +386,13 @@ function Lobby({ state, me, party }: { state: RoomState; me: PublicPlayer; party
         number="2"
         legend="Era"
         value={s.era}
-        options={ERAS.map((e) => ({ id: e.id, label: e.label, title: e.title }))}
+        options={ERAS.map((e) => ({
+          id: e.id,
+          label: e.label,
+          title: e.title,
+          count: sg ? undefined : eraSongs[e.id],
+          disabled: !sg && eraSongs[e.id] === 0 && e.id !== s.era,
+        }))}
         onChange={(era) => update({ era })}
         disabled={s.pool === 'sg-now'}
       />
@@ -434,15 +466,28 @@ function PartyRound({
   party,
   audio,
   onAudioChange,
+  onResult,
 }: {
   state: RoomState;
   me: PublicPlayer;
   party: Party;
   audio: AudioPrefs;
   onAudioChange: (prefs: AudioPrefs) => void;
+  onResult: (lang: LangCode | null, won: boolean) => void;
 }) {
   const round = state.round!;
   const song: Song | undefined = songById(round.songId);
+
+  // Finishing a round (a right answer, giving up, running out of tries or of time) counts in the stats, once. A player
+  // who sat the round out (joined late, or couldn't load the song) has no result. Chart songs have no curated language.
+  const finished = me.round.status === 'won' || me.round.status === 'lost' ? me.round.status : null;
+  useEffect(() => {
+    if (!finished || !song || round.goAt === null) return;
+    // The start time tells one round from another, even a repeat of the same song in a second game in this room.
+    if (!claimPartyResult(`${state.code}:${round.no}:${round.goAt}`)) return;
+    onResult(state.settings.pool === 'sg-now' ? null : song.lang, finished === 'won');
+    // Only the end of a round (or a new round) should count, not every re-render of the same finished one.
+  }, [finished, round.no, round.goAt, round.songId]);
   const [loaded, setLoaded] = useState<{ songId: string; buffer: AudioBuffer; art: string } | null>(null);
   const [playing, setPlaying] = useState<{ id: number; seconds: number } | null>(null);
   const playIdRef = useRef(0);
@@ -500,6 +545,11 @@ function PartyRound({
     : null;
   const canGuess = state.phase === 'playing' && me.round.status === 'playing' && !counting;
   const revealed = state.phase === 'reveal';
+  // Once you have answered (or given up) you wait: the song is not played again until the answer is revealed to everyone,
+  // or it would be heard by the friends still guessing.
+  const waiting = state.phase === 'playing' && (me.round.status === 'won' || me.round.status === 'lost');
+  // The longer clip that follows a skip is about to start by itself; pressing the record meanwhile would play it twice.
+  const [autoPending, setAutoPending] = useState(false);
 
   const play = (seconds: number) => {
     if (!buffer) return;
@@ -513,7 +563,7 @@ function PartyRound({
   };
   const togglePlay = () => {
     if (playing) return stop();
-    if (!view) return;
+    if (!view || waiting || autoPending) return;
     play(revealed || view.status !== 'playing' ? FULL_PREVIEW_SECONDS : currentClip(view));
   };
 
@@ -544,10 +594,21 @@ function PartyRound({
     seenTriesRef.current = { no: round.no, count: triesCount };
     if (!newTry || lastTry !== 'skip' || myStatus !== 'playing' || state.phase !== 'playing' || !view) return;
     const seconds = currentClip(view);
-    const t = setTimeout(() => play(seconds), AUTOPLAY_AFTER_SKIP_MS);
-    return () => clearTimeout(t);
+    setAutoPending(true);
+    const t = setTimeout(() => {
+      setAutoPending(false);
+      play(seconds);
+    }, AUTOPLAY_AFTER_SKIP_MS);
+    return () => {
+      clearTimeout(t);
+      setAutoPending(false);
+    };
     // Only a new attempt, a new round or the end of the round should cut in here.
   }, [triesCount, state.phase, round.no]);
+  // Giving up (or running out of tries) while a clip is playing cuts it off.
+  useEffect(() => {
+    if (waiting) stop();
+  }, [waiting]);
   useEffect(() => () => engine.stop(), []);
 
   const guess = (picked: Song | null, typed: string): boolean => {
@@ -608,14 +669,24 @@ function PartyRound({
 
       <div className="play">
         <Vinyl
-          loading={!buffer}
+          loading={!buffer || autoPending}
           playing={playing}
-          label={!buffer ? 'Tuning' : revealed ? `${FULL_PREVIEW_SECONDS}s` : fmtSeconds(clip)}
-          ariaLabel={playing ? 'Stop' : revealed ? 'Play the 30 second preview' : `Play a ${fmtSeconds(clip)} clip`}
+          label={!buffer ? 'Tuning' : autoPending ? 'Loading' : waiting ? 'Wait' : revealed ? `${FULL_PREVIEW_SECONDS}s` : fmtSeconds(clip)}
+          ariaLabel={
+            playing
+              ? 'Stop'
+              : autoPending
+                ? 'Loading the next clip'
+                : waiting
+                  ? 'Waiting for the others to finish'
+                  : revealed
+                    ? 'Play the 30 second preview'
+                    : `Play a ${fmtSeconds(clip)} clip`
+          }
           art={revealed ? (loaded?.art ?? song?.artworkUrl ?? null) : null}
-          disabled={!buffer || counting || (me.round.status === 'out' && !revealed)}
+          disabled={!buffer || counting || waiting || autoPending || (me.round.status === 'out' && !revealed)}
           onToggle={togglePlay}
-          progress={progress?.songId === round.songId ? progress.done : 0}
+          progress={autoPending && buffer ? null : progress?.songId === round.songId ? progress.done : 0}
         />
         <div className="play__side">
 
