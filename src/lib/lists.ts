@@ -59,6 +59,20 @@ export function matchesSong(candidate: Candidate, c: Song): boolean {
 }
 
 /**
+ * The catalogue's copy of a list entry's song, if it is in the catalogue. `catalogId` goes stale when the catalogue is
+ * rebuilt and Apple hands a song a new track id (a saved chart or playlist then still names the old one), so an entry
+ * whose id is gone is matched again by title and artist rather than showing up as a second copy of the same song.
+ */
+function catalogCopy(entry: ListEntry, byId: ReadonlyMap<string, Song>, catalog: readonly Song[]): Song | undefined {
+  if (!entry.catalogId) return undefined;
+  const own = byId.get(entry.catalogId);
+  if (own) return own;
+  const { song } = entry;
+  const candidate = { titles: [song.title, ...song.titleAlt], artists: [song.artist, ...song.artistAlt] };
+  return catalog.find((c) => matchesSong(candidate, c));
+}
+
+/**
  * The same catalogue with every artist added that a list credits on one of its songs and the catalogue's own credit
  * lacks: All Time has "Jay Chou" for a song that your playlist lists as "Jay Chou, Lara Liang". The song is the same
  * (same id); only its credit is fuller, so the guess box finds it by either artist and the answer card names both.
@@ -67,7 +81,7 @@ export function withListCredits(catalog: readonly Song[], entries: readonly List
   const byId = new Map(catalog.map((s) => [s.id, s] as const));
   const added = new Map<string, Map<string, string>>(); // catalogue id -> folded name -> name as written
   for (const entry of entries) {
-    const own = entry.catalogId ? byId.get(entry.catalogId) : undefined;
+    const own = catalogCopy(entry, byId, catalog);
     if (!own) continue;
     const spellings = [own.artist, ...own.artistAlt];
     const known = new Set(spellings.flatMap(creditsOf).map(compact));
@@ -94,7 +108,7 @@ export function buildListPool(entries: readonly ListEntry[], catalog: readonly S
   const extra: Song[] = [];
   const rank = new Map<string, number>();
   for (const entry of entries) {
-    const own = entry.catalogId ? byId.get(entry.catalogId) : undefined;
+    const own = catalogCopy(entry, byId, catalog);
     const song = own ?? entry.song;
     if (rank.has(song.id)) continue;
     rank.set(song.id, entry.rank);

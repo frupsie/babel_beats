@@ -47,6 +47,10 @@ describe('withListCredits', () => {
     expect(withListCredits([coral], [entry('Jay Chou, Lara Liang')])[0]).toBe(coral);
   });
 
+  it('still adds the credit when the list’s catalogue id is stale but the song matches', () => {
+    expect(withListCredits([coral], [entry('Jay Chou, Lara Liang', 'gone')])[0]).toMatchObject({ id: 'c9', artist: '周杰倫, Lara Liang' });
+  });
+
   it('makes the featured artist searchable in the guess box', () => {
     const songs = withListCredits([coral], [entry('Jay Chou, Lara Liang', 'c9')]);
     expect(searchSongs(indexSongs(songs), 'lara liang').map((s) => s.id)).toEqual(['c9']);
@@ -103,10 +107,25 @@ describe('buildListPool', () => {
   });
 
   it('falls back to the entry’s own song if the catalogue no longer has it', () => {
-    const copy = song({ id: 'x9', lang: 'zh', title: '晴天', artist: 'Jay Chou' });
+    const copy = song({ id: 'x9', lang: 'ja', title: 'Flamingo', artist: 'Kenshi Yonezu' });
     const { pool, extra } = buildListPool([entry(1, copy, 'gone')], [sunny]);
     expect(pool).toEqual([copy]);
     expect(extra).toEqual([copy]);
+  });
+
+  it('re-links an entry whose catalogue id is stale to the same song by title and artist', () => {
+    // The catalogue was rebuilt and Apple gave the song a new track id: one song, not two.
+    const copy = song({ id: 'x9', lang: 'zh', title: '晴天', artist: 'Jay Chou' });
+    const { pool, extra, rank } = buildListPool([entry(4, copy, 'gone')], [sunny]);
+    expect(pool).toEqual([sunny]);
+    expect(extra).toEqual([]);
+    expect(rank.get('c1')).toBe(4);
+  });
+
+  it('does not re-link a stale entry to a different song by the same artist', () => {
+    const other = song({ id: 'x9', lang: 'ja', title: 'Flamingo', artist: 'Kenshi Yonezu' });
+    const { extra } = buildListPool([entry(1, other, 'gone')], [lemon]);
+    expect(extra).toEqual([other]);
   });
 
   it('handles an empty list', () => {
